@@ -41,7 +41,6 @@ public class MemberRepositoryTests {
         String email = "user9@aaa.com";
 
         Member member = memberRepository.getWithRoles(email);
-        log.info("------");
         log.info("----------------------");
         log.info(member);
         log.info(member.getMemberRoleList());

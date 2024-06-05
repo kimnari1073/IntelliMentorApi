@@ -29,6 +29,10 @@ public class CustomSecurityConfig {
 
         http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable());
 
+        http.formLogin(config ->{
+            config.loginPage("/api/member/login");
+        });
+
         return http.build();
     }
     @Bean
