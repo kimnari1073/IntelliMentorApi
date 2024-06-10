@@ -1,4 +1,4 @@
-package org.intelli.intellimentor.handler;
+package org.intelli.intellimentor.security.handler;
 
 import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
