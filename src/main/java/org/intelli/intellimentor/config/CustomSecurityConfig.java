@@ -6,6 +6,7 @@ import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.security.handler.APILoginFailHandler;
 import org.intelli.intellimentor.security.handler.APILoginSuccessHandler;
 import org.intelli.intellimentor.security.filter.JWTCheckFilter;
+import org.intelli.intellimentor.security.handler.CustomAccessDeniedHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -46,6 +47,13 @@ public class CustomSecurityConfig {
         });
 
         http.addFilterBefore(new JWTCheckFilter(), UsernamePasswordAuthenticationFilter.class);
+
+
+        //PreAuth
+        http.exceptionHandling(config -> {
+            config.accessDeniedHandler(new CustomAccessDeniedHandler());
+        });
+
         return http.build();
     }
     @Bean
