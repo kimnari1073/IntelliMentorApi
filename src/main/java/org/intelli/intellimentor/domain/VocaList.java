@@ -19,6 +19,6 @@ public class VocaList {
     private String title;
 
     @ManyToOne
-    @JoinColumn(name = "user_id",referencedColumnName = "id")
-    private User user;  // User를 참조하는 외래키
+    @JoinColumn(name = "email")
+    private Member member;  // Member를 참조하는 외래키
 }
