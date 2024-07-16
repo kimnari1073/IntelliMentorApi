@@ -24,7 +24,7 @@ public class MemberServiceImpl implements MemberService{
     @Override
     public MemberDTO getKakaoMember(String accessToken) {
         //accessToken을 이용해서 사용자 정보 가져오기
-
+        getEmailFromKakaoAccessToken(accessToken);
 
         //기존 DB에 회원 정보가 있는 경우, 없는 경우
 
