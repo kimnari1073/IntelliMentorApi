@@ -3,9 +3,12 @@ package org.intelli.intellimentor.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.dto.MemberDTO;
+import org.intelli.intellimentor.dto.MemberModifyDTO;
 import org.intelli.intellimentor.service.MemberService;
 import org.intelli.intellimentor.util.JWTUtil;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
@@ -31,4 +34,11 @@ public class SocialController {
         return claims;
     }
 
+    @PutMapping("/api/member/modify")
+    public Map<String, String> modify(@RequestBody MemberModifyDTO memberModifyDTO){
+        log.info("member modify---------------------"+memberModifyDTO);
+        memberService.modifyMember(memberModifyDTO);
+
+        return Map.of("result","modified");
+    }
 }
