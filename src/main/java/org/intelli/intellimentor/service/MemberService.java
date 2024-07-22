@@ -10,8 +10,9 @@ import java.util.stream.Collectors;
 @Transactional
 public interface MemberService {
     MemberDTO getKakaoMember(String accessToken);
-
+    String register(MemberDTO memberDTO);
     void modifyMember(MemberModifyDTO memberModifyDTO);
+
     default MemberDTO entityToDTO(Member member){
         MemberDTO dto = new MemberDTO(
                 member.getEmail(),

@@ -7,12 +7,14 @@ import org.intelli.intellimentor.domain.MemberRole;
 import org.intelli.intellimentor.dto.MemberDTO;
 import org.intelli.intellimentor.dto.MemberModifyDTO;
 import org.intelli.intellimentor.repository.MemberRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -24,10 +26,12 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Log4j2
+@Transactional
 public class MemberServiceImpl implements MemberService{
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ModelMapper modelMapper;
 
     @Override
     public MemberDTO getKakaoMember(String accessToken) {
@@ -46,6 +50,14 @@ public class MemberServiceImpl implements MemberService{
         MemberDTO memberDTO = entityToDTO(socialMember);
 
         return memberDTO;
+    }
+
+    @Override
+    public String register(MemberDTO memberDTO) {
+        Member member = modelMapper.map(memberDTO,Member.class);
+        Member savedMember = memberRepository.save(member);
+
+        return savedMember.getEmail();
     }
 
     @Override
