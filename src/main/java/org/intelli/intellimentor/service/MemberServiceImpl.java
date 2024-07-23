@@ -53,11 +53,10 @@ public class MemberServiceImpl implements MemberService{
     }
 
     @Override
-    public String register(MemberDTO memberDTO) {
+    public void register(MemberDTO memberDTO) {
         Member member = modelMapper.map(memberDTO,Member.class);
         Member savedMember = memberRepository.save(member);
 
-        return savedMember.getEmail();
     }
 
     @Override

@@ -6,10 +6,7 @@ import org.intelli.intellimentor.dto.MemberDTO;
 import org.intelli.intellimentor.dto.MemberModifyDTO;
 import org.intelli.intellimentor.service.MemberService;
 import org.intelli.intellimentor.util.JWTUtil;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -34,11 +31,14 @@ public class SocialController {
         return claims;
     }
 
+    @PostMapping("/api/member/singup")
+    public Map<String,String> singup(@RequestBody MemberDTO memberDTO){
+        memberService.register(memberDTO);
+        return Map.of("login","success");
+    }
     @PutMapping("/api/member/modify")
     public Map<String, String> modify(@RequestBody MemberModifyDTO memberModifyDTO){
-        log.info("member modify---------------------"+memberModifyDTO);
         memberService.modifyMember(memberModifyDTO);
-
         return Map.of("result","modified");
     }
 }
