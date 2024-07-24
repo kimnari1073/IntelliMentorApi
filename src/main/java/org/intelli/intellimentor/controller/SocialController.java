@@ -33,6 +33,7 @@ public class SocialController {
 
     @PostMapping("/api/member/singup")
     public Map<String,String> singup(@RequestBody MemberDTO memberDTO){
+        System.out.println(memberDTO);
         memberService.register(memberDTO);
         return Map.of("login","success");
     }
