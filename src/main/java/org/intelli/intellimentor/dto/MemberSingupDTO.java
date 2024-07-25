@@ -7,6 +7,5 @@ import lombok.Data;
 public class MemberSingupDTO {
     private String email;
     private String pw;
-    private String pwCheck;
     private String nickname;
 }

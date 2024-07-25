@@ -6,6 +6,7 @@ import org.intelli.intellimentor.domain.Member;
 import org.intelli.intellimentor.domain.MemberRole;
 import org.intelli.intellimentor.dto.MemberDTO;
 import org.intelli.intellimentor.dto.MemberModifyDTO;
+import org.intelli.intellimentor.dto.MemberSingupDTO;
 import org.intelli.intellimentor.repository.MemberRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpEntity;
@@ -31,7 +32,7 @@ public class MemberServiceImpl implements MemberService{
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
-    private final ModelMapper modelMapper;
+//    private final ModelMapper modelMapper;
 
     @Override
     public MemberDTO getKakaoMember(String accessToken) {
@@ -52,11 +53,24 @@ public class MemberServiceImpl implements MemberService{
         return memberDTO;
     }
 
+    //로컬 회원 가입
     @Override
-    public void register(MemberDTO memberDTO) {
-        Member member = modelMapper.map(memberDTO,Member.class);
-        Member savedMember = memberRepository.save(member);
+    public void register(MemberSingupDTO memberSingupDTO) {
+//        Member member = modelMapper.map(memberSingupDTO,Member.class);
 
+        Member member=Member.builder()
+                .email(memberSingupDTO.getEmail())
+                .pw(passwordEncoder.encode(memberSingupDTO.getPw()))
+                .nickname(memberSingupDTO.getNickname())
+                .build();
+        memberRepository.save(member);
+
+    }
+
+    //이메일 중복확인
+    @Override
+    public boolean checkEmailExists(String email) {
+        return memberRepository.existsById(email);
     }
 
     @Override
