@@ -34,7 +34,7 @@ public class MemberController {
     }
 
     //로컬 회원가입
-    @PostMapping("/api/member/singup")
+    @PostMapping("/api/member/signup")
     public Map<String,String> singup(@RequestBody MemberSingupDTO memberSingupDTO){
         memberService.register(memberSingupDTO);
         return Map.of("login","success");
