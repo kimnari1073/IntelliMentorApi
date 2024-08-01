@@ -20,6 +20,7 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.LinkedHashMap;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -67,20 +68,17 @@ public class MemberServiceImpl implements MemberService{
         memberRepository.save(member);
 
     }
-
-    //이메일 중복확인
-    @Override
-    public boolean checkEmailExists(String email) {
-        return memberRepository.existsById(email);
-    }
+    //회원정보 수정
 
     @Override
     public void modifyMember(MemberModifyDTO memberModifyDTO) {
         Optional<Member> result = memberRepository.findById(memberModifyDTO.getEmail());
-        Member member = result.orElseThrow();
+        Member member = result.orElseThrow(() -> new NoSuchElementException("Member not found"));
+
         member.changeNickname(memberModifyDTO.getNickname());
-        member.changeSocial(false);
         member.changePw(passwordEncoder.encode(memberModifyDTO.getPw()));
+
+        //        member.changeSocial(false);
         memberRepository.save(member);
     }
 

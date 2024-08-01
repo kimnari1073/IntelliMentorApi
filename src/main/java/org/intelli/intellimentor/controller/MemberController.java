@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestController
 @Log4j2
@@ -49,8 +50,12 @@ public class MemberController {
 
     //회원정보 수정
     @PutMapping("/api/member/modify")
-    public Map<String, String> modify(@RequestBody MemberModifyDTO memberModifyDTO){
-        memberService.modifyMember(memberModifyDTO);
-        return Map.of("result","modified");
+    public ResponseEntity<Map<String,String>> modify(@RequestBody MemberModifyDTO memberModifyDTO){
+        try{
+            memberService.modifyMember(memberModifyDTO);
+            return ResponseEntity.noContent().build();
+        }catch (NoSuchElementException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("ERROR_MESSAGE",e.getMessage()));
+        }
     }
 }

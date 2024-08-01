@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 public interface MemberService {
     MemberDTO getKakaoMember(String accessToken);
     void register(MemberSignupDTO memberSignupDTO);
-    boolean checkEmailExists(String email);
     void modifyMember(MemberModifyDTO memberModifyDTO);
 
     default MemberDTO entityToDTO(Member member){
