@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.dto.MemberDTO;
 import org.intelli.intellimentor.dto.MemberModifyDTO;
-import org.intelli.intellimentor.dto.MemberSingupDTO;
+import org.intelli.intellimentor.dto.MemberSignupDTO;
 import org.intelli.intellimentor.service.MemberService;
 import org.intelli.intellimentor.util.JWTUtil;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -35,9 +37,14 @@ public class MemberController {
 
     //로컬 회원가입
     @PostMapping("/api/member/signup")
-    public Map<String,String> singup(@RequestBody MemberSingupDTO memberSingupDTO){
-        memberService.register(memberSingupDTO);
-        return Map.of("login","success");
+    public ResponseEntity<Map<String,String>> signup(@RequestBody MemberSignupDTO memberSignupDTO){
+        try{
+            memberService.register(memberSignupDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("email",memberSignupDTO.getEmail()));
+        }catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("ERROR_MESSAGE",e.getMessage()));
+        }
+
     }
 
     //회원정보 수정

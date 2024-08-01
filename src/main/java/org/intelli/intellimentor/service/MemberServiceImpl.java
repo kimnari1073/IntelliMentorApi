@@ -6,9 +6,8 @@ import org.intelli.intellimentor.domain.Member;
 import org.intelli.intellimentor.domain.MemberRole;
 import org.intelli.intellimentor.dto.MemberDTO;
 import org.intelli.intellimentor.dto.MemberModifyDTO;
-import org.intelli.intellimentor.dto.MemberSingupDTO;
+import org.intelli.intellimentor.dto.MemberSignupDTO;
 import org.intelli.intellimentor.repository.MemberRepository;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -20,7 +19,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.swing.text.html.Option;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 
@@ -32,7 +30,6 @@ public class MemberServiceImpl implements MemberService{
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
-//    private final ModelMapper modelMapper;
 
     @Override
     public MemberDTO getKakaoMember(String accessToken) {
@@ -55,13 +52,17 @@ public class MemberServiceImpl implements MemberService{
 
     //로컬 회원 가입
     @Override
-    public void register(MemberSingupDTO memberSingupDTO) {
-//        Member member = modelMapper.map(memberSingupDTO,Member.class);
-
+    public void register(MemberSignupDTO memberSignupDTO) {
+        if(memberRepository.existsByEmail(memberSignupDTO.getEmail())){
+            throw new IllegalArgumentException("Email already exists");
+        }
+        if(!memberSignupDTO.getPw().equals(memberSignupDTO.getPwCheck())){
+            throw new IllegalArgumentException("Passwords do not match");
+        }
         Member member=Member.builder()
-                .email(memberSingupDTO.getEmail())
-                .pw(passwordEncoder.encode(memberSingupDTO.getPw()))
-                .nickname(memberSingupDTO.getNickname())
+                .email(memberSignupDTO.getEmail())
+                .pw(passwordEncoder.encode(memberSignupDTO.getPw()))
+                .nickname(memberSignupDTO.getNickname())
                 .build();
         memberRepository.save(member);
 

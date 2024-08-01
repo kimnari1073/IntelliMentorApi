@@ -3,7 +3,7 @@ package org.intelli.intellimentor.service;
 import org.intelli.intellimentor.domain.Member;
 import org.intelli.intellimentor.dto.MemberDTO;
 import org.intelli.intellimentor.dto.MemberModifyDTO;
-import org.intelli.intellimentor.dto.MemberSingupDTO;
+import org.intelli.intellimentor.dto.MemberSignupDTO;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.stream.Collectors;
@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 @Transactional
 public interface MemberService {
     MemberDTO getKakaoMember(String accessToken);
-    void register(MemberSingupDTO memberSingupDTO);
+    void register(MemberSignupDTO memberSignupDTO);
     boolean checkEmailExists(String email);
     void modifyMember(MemberModifyDTO memberModifyDTO);
 
