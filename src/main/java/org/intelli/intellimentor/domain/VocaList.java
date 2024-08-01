@@ -3,6 +3,8 @@ package org.intelli.intellimentor.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Table
 @Getter
@@ -14,11 +16,14 @@ import lombok.*;
 public class VocaList {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="voca_list_id")
-    private Long vocaListId;
-    private String title;
+    private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "email")
-    private Member member;  // Member를 참조하는 외래키
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
+
+    private String title;
+
+    @OneToMany(mappedBy = "vocaList", cascade = CascadeType.ALL)
+    private List<Voca> voca;
 }

@@ -1,9 +1,6 @@
 package org.intelli.intellimentor.domain;
 
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -25,6 +22,9 @@ public class Member {
     @ElementCollection(fetch = FetchType.LAZY)
     @Builder.Default
     private List<MemberRole> memberRoleList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<VocaList> VocaList;
 
     public void addRole(MemberRole memberRole){
         memberRoleList.add(memberRole);

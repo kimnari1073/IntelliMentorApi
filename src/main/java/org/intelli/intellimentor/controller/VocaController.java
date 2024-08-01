@@ -13,9 +13,4 @@ import java.util.Map;
 public class VocaController {
     private final VocaService vocaService;
 
-    @PostMapping("/")
-    public Map<String,Long> register(@RequestBody VocaListDTO vocaListDTO){
-        Long vno = vocaService.register(vocaListDTO);
-        return Map.of("VocaNO",vno);
-    }
 }

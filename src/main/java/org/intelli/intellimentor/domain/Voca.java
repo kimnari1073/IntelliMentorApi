@@ -14,13 +14,14 @@ import lombok.*;
 @NoArgsConstructor
 public class Voca {
 
-    @EmbeddedId
-    private VocaId vocaId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private String kor;
-
-    @MapsId("vocaListId") // EmbeddedId 내 vocaListId 필드를 매핑
     @ManyToOne
-    @JoinColumn(name="voca_list_id", referencedColumnName = "voca_list_id")
-    private VocaList vocaList; // 여기에서만 외래키 관리
+    @JoinColumn(name = "voca_list_id", nullable = false)
+    private VocaList vocaList;
+
+    private String eng;
+    private String kor;
 }
