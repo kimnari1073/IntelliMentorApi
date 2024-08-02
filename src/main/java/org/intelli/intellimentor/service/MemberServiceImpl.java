@@ -68,8 +68,7 @@ public class MemberServiceImpl implements MemberService{
         memberRepository.save(member);
 
     }
-    //회원정보 수정
-
+    //회원 정보 수정
     @Override
     public void modifyMember(MemberModifyDTO memberModifyDTO) {
         Optional<Member> result = memberRepository.findById(memberModifyDTO.getEmail());
@@ -81,6 +80,15 @@ public class MemberServiceImpl implements MemberService{
         //        member.changeSocial(false);
         memberRepository.save(member);
     }
+
+    @Override
+    public void deleteMember(MemberModifyDTO memberDTO) {
+        Optional<Member> result = memberRepository.findById(memberDTO.getEmail());
+        Member member = result.orElseThrow(() -> new NoSuchElementException("Member not found"));
+
+        memberRepository.delete(member);
+    }
+
 
     private Member makeMember(String nickname){
         String tempPassword = makeTempPassword();

@@ -58,4 +58,14 @@ public class MemberController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("ERROR_MESSAGE",e.getMessage()));
         }
     }
+    //회원 삭제
+    @DeleteMapping("/api/member/delete")
+    public ResponseEntity<Map<String,String>> delete(@RequestBody MemberModifyDTO memberDTO){
+        try{
+            memberService.deleteMember(memberDTO);
+            return ResponseEntity.noContent().build();
+        }catch (NoSuchElementException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("ERROR_MESSAGE",e.getMessage()));
+        }
+    }
 }
