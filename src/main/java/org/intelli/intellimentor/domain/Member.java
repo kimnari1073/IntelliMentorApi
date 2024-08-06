@@ -23,9 +23,6 @@ public class Member {
     @Builder.Default
     private List<MemberRole> memberRoleList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    private List<VocaList> VocaList;
-
     public void addRole(MemberRole memberRole){
         memberRoleList.add(memberRole);
     }

@@ -17,11 +17,8 @@ public class Voca {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "voca_list_id", nullable = false)
-    private VocaList vocaList;
-
+    private String userId;
+    private String title;
     private String eng;
     private String kor;
 }

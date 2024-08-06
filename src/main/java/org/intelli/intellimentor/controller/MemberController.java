@@ -17,11 +17,12 @@ import java.util.NoSuchElementException;
 @RestController
 @Log4j2
 @RequiredArgsConstructor
+@RequestMapping("/api/member")
 public class MemberController {
     private final MemberService memberService;
 
     //소셜 회원가입 - 카카오
-    @GetMapping("/api/member/kakao")
+    @GetMapping("/kakao")
     public Map<String,Object> getMemberFromKakao(String accessToken){
         log.info("accessToken: "+accessToken);
         MemberDTO memberDTO = memberService.getKakaoMember(accessToken);
@@ -37,7 +38,7 @@ public class MemberController {
     }
 
     //로컬 회원가입
-    @PostMapping("/api/member/signup")
+    @PostMapping("/signup")
     public ResponseEntity<Map<String,String>> signup(@RequestBody MemberSignupDTO memberSignupDTO){
         try{
             memberService.register(memberSignupDTO);
@@ -49,7 +50,7 @@ public class MemberController {
     }
 
     //회원정보 수정
-    @PutMapping("/api/member/modify")
+    @PutMapping("/modify")
     public ResponseEntity<Map<String,String>> modify(@RequestBody MemberModifyDTO memberModifyDTO){
         try{
             memberService.modifyMember(memberModifyDTO);
@@ -59,7 +60,7 @@ public class MemberController {
         }
     }
     //회원 삭제
-    @DeleteMapping("/api/member/delete")
+    @DeleteMapping("/delete")
     public ResponseEntity<Map<String,String>> delete(@RequestBody MemberModifyDTO memberDTO){
         try{
             memberService.deleteMember(memberDTO);
