@@ -65,7 +65,7 @@ public class VocaRepositoryTests {
 
     @Test
     public void testUpdateVoca(){
-        String title="테스트제목2";
+        String title="테스트제목1";
         String userId="user1@aaa.com";
         List<String> updateEng =new ArrayList<>();
         List<String> updateKor = new ArrayList<>();

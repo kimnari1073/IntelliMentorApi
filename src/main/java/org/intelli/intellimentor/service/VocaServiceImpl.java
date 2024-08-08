@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -57,7 +58,6 @@ public class VocaServiceImpl implements VocaService{
 
         List<String> eng = new ArrayList<>();
         List<String> kor = new ArrayList<>();
-
         for (Voca voca : result) {
             eng.add(voca.getEng());
             kor.add(voca.getKor());
@@ -71,6 +71,12 @@ public class VocaServiceImpl implements VocaService{
 
     @Override
     public void deleteVoca(VocaDTO vocaDTO) {
-        vocaRepository.deleteByUserIdAndTitle(vocaDTO.getUserId(),vocaDTO.getTitle());
+        String userId=vocaDTO.getUserId();
+        String title= vocaDTO.getTitle();
+        List<Voca> result = vocaRepository.findByUserIdAndTitle(userId,title);
+        if(result.isEmpty()){
+            throw new NoSuchElementException();
+        }
+        vocaRepository.deleteByUserIdAndTitle(userId,title);
     }
 }
