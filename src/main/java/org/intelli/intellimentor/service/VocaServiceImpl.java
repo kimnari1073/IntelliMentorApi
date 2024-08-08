@@ -1,10 +1,13 @@
 package org.intelli.intellimentor.service;
 
+import com.sun.jdi.request.DuplicateRequestException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.intelli.intellimentor.controller.advice.exception.DuplicateDataException;
 import org.intelli.intellimentor.domain.Voca;
 import org.intelli.intellimentor.dto.VocaDTO;
 import org.intelli.intellimentor.dto.VocaListDTO;
+import org.intelli.intellimentor.dto.VocaModifyDTO;
 import org.intelli.intellimentor.repository.VocaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +27,10 @@ public class VocaServiceImpl implements VocaService{
 
     @Override
     public void createVoca(VocaDTO vocaDTO) {
+        List<Voca> result = vocaRepository.findByUserIdAndTitle(vocaDTO.getUserId(), vocaDTO.getTitle());
+        if(!result.isEmpty()){
+            throw new DuplicateDataException("단어장 제목이 중복됩니다.");
+        }
         List<Voca> vocaList = new ArrayList<>();
 
         for (int i = 0; i < vocaDTO.getEng().size(); i++) {
@@ -67,6 +74,22 @@ public class VocaServiceImpl implements VocaService{
         responseDTO.setKor(kor);
 
         return responseDTO;
+    }
+
+    @Override
+    public void updateVoca(VocaModifyDTO vocaModifyDTO) {
+        VocaDTO deleteVocaDTO = new VocaDTO();
+        deleteVocaDTO.setUserId(vocaModifyDTO.getUserId());
+        deleteVocaDTO.setTitle(vocaModifyDTO.getTitle());
+        deleteVoca(deleteVocaDTO);
+
+        VocaDTO createVocaDTO = new VocaDTO();
+        createVocaDTO.setUserId(vocaModifyDTO.getUserId());
+        createVocaDTO.setTitle(vocaModifyDTO.getModifiedTitle());
+        createVocaDTO.setEng(vocaModifyDTO.getModifiedEng());
+        createVocaDTO.setKor(vocaModifyDTO.getModifiedKor());
+        createVoca(createVocaDTO);
+
     }
 
     @Override
