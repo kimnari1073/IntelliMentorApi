@@ -58,4 +58,26 @@ public class VocaRepositoryTests {
         log.info(result2);
 
     }
+
+    @Test
+    public void testUpdateVoca(){
+        String title="테스트제목1";
+        String userId="user1@aaa.com";
+        List<String> updateEng =new ArrayList<>();
+        List<String> updateKor = new ArrayList<>();
+        for(int i=0;i<=3;i++){
+            updateEng.add("engUpdateTest"+i);
+            updateKor.add("한글업데이트테스트"+i);
+        }
+
+
+    }
+    @Test
+    public void testDeleteVoca(){
+        String userId="user1@aaa.com";
+        String title="테스트제목2";
+
+        vocaRepository.deleteByUserIdAndTitle(userId,title);
+
+    }
 }

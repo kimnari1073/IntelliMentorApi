@@ -2,12 +2,14 @@ package org.intelli.intellimentor.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.intelli.intellimentor.domain.Voca;
 import org.intelli.intellimentor.dto.VocaDTO;
 import org.intelli.intellimentor.dto.VocaListDTO;
 import org.intelli.intellimentor.service.VocaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +22,7 @@ import java.util.Map;
 public class VocaController {
     private final VocaService vocaService;
 
+    //단어장 생성
     @PostMapping("/create")
     public ResponseEntity<Map<String,String>> createVoca(@RequestBody VocaDTO vocaDTO){
         vocaService.createVoca(vocaDTO);
@@ -27,10 +30,16 @@ public class VocaController {
 
     }
 
+    //단어장 리스트 조회
     @GetMapping("/read")
     public ResponseEntity<List<VocaListDTO>> readVoca(@RequestBody VocaDTO vocaDTO){
         List<VocaListDTO> result = vocaService.readVoca(vocaDTO.getUserId());
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
+    @DeleteMapping("/delete")
+    public  ResponseEntity<String> deleteVoca(@RequestBody VocaDTO vocaDTO){
+        vocaService.deleteVoca(vocaDTO);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 }

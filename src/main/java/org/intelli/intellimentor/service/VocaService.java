@@ -9,4 +9,5 @@ import java.util.List;
 public interface VocaService {
     void createVoca(VocaDTO vocaDTO);
     List<VocaListDTO> readVoca(String userId);
+    void deleteVoca(VocaDTO vocaDTO);
 }

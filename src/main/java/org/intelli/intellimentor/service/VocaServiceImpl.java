@@ -46,4 +46,9 @@ public class VocaServiceImpl implements VocaService{
                 .map(r-> new VocaListDTO((String)r[0],(Long)r[1]))
                 .toList();
     }
+
+    @Override
+    public void deleteVoca(VocaDTO vocaDTO) {
+        vocaRepository.deleteByUserIdAndTitle(vocaDTO.getUserId(),vocaDTO.getTitle());
+    }
 }

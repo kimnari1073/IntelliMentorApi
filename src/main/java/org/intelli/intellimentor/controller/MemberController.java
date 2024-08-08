@@ -40,33 +40,20 @@ public class MemberController {
     //로컬 회원가입
     @PostMapping("/signup")
     public ResponseEntity<Map<String,String>> signup(@RequestBody MemberSignupDTO memberSignupDTO){
-        try{
-            memberService.register(memberSignupDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("email",memberSignupDTO.getEmail()));
-        }catch (IllegalArgumentException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("ERROR_MESSAGE",e.getMessage()));
-        }
-
+        memberService.register(memberSignupDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("email",memberSignupDTO.getEmail()));
     }
 
     //회원정보 수정
     @PutMapping("/modify")
     public ResponseEntity<Map<String,String>> modify(@RequestBody MemberModifyDTO memberModifyDTO){
-        try{
-            memberService.modifyMember(memberModifyDTO);
-            return ResponseEntity.noContent().build();
-        }catch (NoSuchElementException e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("ERROR_MESSAGE",e.getMessage()));
-        }
+        memberService.modifyMember(memberModifyDTO);
+        return ResponseEntity.noContent().build();
     }
     //회원 삭제
     @DeleteMapping("/delete")
     public ResponseEntity<Map<String,String>> delete(@RequestBody MemberModifyDTO memberDTO){
-        try{
-            memberService.deleteMember(memberDTO);
-            return ResponseEntity.noContent().build();
-        }catch (NoSuchElementException e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("ERROR_MESSAGE",e.getMessage()));
-        }
+        memberService.deleteMember(memberDTO);
+        return ResponseEntity.noContent().build();
     }
 }
