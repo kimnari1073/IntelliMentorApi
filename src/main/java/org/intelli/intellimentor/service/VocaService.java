@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface VocaService {
     void createVoca(VocaDTO vocaDTO);
-    List<VocaListDTO> readVoca(String userId);
+    List<VocaListDTO> readVoca(VocaDTO vocaDTO);
+    VocaDTO readDetailsVoca(VocaDTO vocaDTO);
     void deleteVoca(VocaDTO vocaDTO);
 }

@@ -3,7 +3,9 @@ package org.intelli.intellimentor.repository;
 import lombok.extern.java.Log;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.domain.Voca;
+import org.intelli.intellimentor.dto.VocaDTO;
 import org.intelli.intellimentor.dto.VocaListDTO;
+import org.intelli.intellimentor.service.VocaService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -59,9 +61,11 @@ public class VocaRepositoryTests {
 
     }
 
+
+
     @Test
     public void testUpdateVoca(){
-        String title="테스트제목1";
+        String title="테스트제목2";
         String userId="user1@aaa.com";
         List<String> updateEng =new ArrayList<>();
         List<String> updateKor = new ArrayList<>();
@@ -69,6 +73,20 @@ public class VocaRepositoryTests {
             updateEng.add("engUpdateTest"+i);
             updateKor.add("한글업데이트테스트"+i);
         }
+        vocaRepository.deleteByUserIdAndTitle(userId,title);
+
+        List<Voca> saveList=new ArrayList<>();
+        for(int i=0; i<=3; i++){
+            Voca voca = Voca.builder()
+                    .eng(updateEng.get(i))
+                    .kor(updateKor.get(i))
+                    .title("테스트업데이트제목1")
+                    .userId("user1@aaa.com")
+                    .build();
+            saveList.add(voca);
+        }
+        vocaRepository.saveAll(saveList);
+
 
 
     }

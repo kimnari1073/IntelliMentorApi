@@ -30,13 +30,19 @@ public class VocaController {
 
     }
 
-    //단어장 리스트 조회
+    //단어장 조회(리스트)
     @GetMapping("/read")
     public ResponseEntity<List<VocaListDTO>> readVoca(@RequestBody VocaDTO vocaDTO){
-        List<VocaListDTO> result = vocaService.readVoca(vocaDTO.getUserId());
+        List<VocaListDTO> result = vocaService.readVoca(vocaDTO);
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
+    //단어장 조회(상세)
+    @GetMapping("/read/details")
+    public ResponseEntity<VocaDTO> readDetailsVoca(@RequestBody VocaDTO vocaDTO){
+        VocaDTO result = vocaService.readDetailsVoca(vocaDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
     @DeleteMapping("/delete")
     public  ResponseEntity<String> deleteVoca(@RequestBody VocaDTO vocaDTO){
         vocaService.deleteVoca(vocaDTO);
