@@ -3,8 +3,7 @@ package org.intelli.intellimentor.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.dto.MemberDTO;
-import org.intelli.intellimentor.dto.MemberModifyDTO;
-import org.intelli.intellimentor.dto.MemberSignupDTO;
+import org.intelli.intellimentor.dto.MemberSubDTO;
 import org.intelli.intellimentor.service.MemberService;
 import org.intelli.intellimentor.util.JWTUtil;
 import org.springframework.http.HttpStatus;
@@ -12,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 @RestController
 @Log4j2
@@ -39,20 +37,20 @@ public class MemberController {
 
     //로컬 회원가입
     @PostMapping("/signup")
-    public ResponseEntity<Map<String,String>> signup(@RequestBody MemberSignupDTO memberSignupDTO){
-        memberService.register(memberSignupDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("email",memberSignupDTO.getEmail()));
+    public ResponseEntity<Map<String,String>> signup(@RequestBody MemberSubDTO memberSubDTO){
+        memberService.register(memberSubDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("email",memberSubDTO.getEmail()));
     }
 
     //회원정보 수정
     @PutMapping("/modify")
-    public ResponseEntity<Map<String,String>> modify(@RequestBody MemberModifyDTO memberModifyDTO){
-        memberService.modifyMember(memberModifyDTO);
+    public ResponseEntity<Map<String,String>> modify(@RequestBody MemberSubDTO memberSubDTO){
+        memberService.modifyMember(memberSubDTO);
         return ResponseEntity.noContent().build();
     }
     //회원 삭제
     @DeleteMapping("/delete")
-    public ResponseEntity<Map<String,String>> delete(@RequestBody MemberModifyDTO memberDTO){
+    public ResponseEntity<Map<String,String>> delete(@RequestBody MemberSubDTO memberDTO){
         memberService.deleteMember(memberDTO);
         return ResponseEntity.noContent().build();
     }

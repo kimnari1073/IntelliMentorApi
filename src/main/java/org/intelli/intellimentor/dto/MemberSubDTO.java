@@ -4,7 +4,7 @@ package org.intelli.intellimentor.dto;
 import lombok.Data;
 
 @Data
-public class MemberSignupDTO {
+public class MemberSubDTO {
     private String email;
     private String pw;
     private String pwCheck;

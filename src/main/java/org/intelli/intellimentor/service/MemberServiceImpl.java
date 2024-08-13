@@ -5,8 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.domain.Member;
 import org.intelli.intellimentor.domain.MemberRole;
 import org.intelli.intellimentor.dto.MemberDTO;
-import org.intelli.intellimentor.dto.MemberModifyDTO;
-import org.intelli.intellimentor.dto.MemberSignupDTO;
+import org.intelli.intellimentor.dto.MemberSubDTO;
 import org.intelli.intellimentor.repository.MemberRepository;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -53,36 +52,36 @@ public class MemberServiceImpl implements MemberService{
 
     //로컬 회원 가입
     @Override
-    public void register(MemberSignupDTO memberSignupDTO) {
-        if(memberRepository.existsByEmail(memberSignupDTO.getEmail())){
+    public void register(MemberSubDTO memberSubDTO) {
+        if(memberRepository.existsByEmail(memberSubDTO.getEmail())){
             throw new IllegalArgumentException("Email already exists");
         }
-        if(!memberSignupDTO.getPw().equals(memberSignupDTO.getPwCheck())){
+        if(!memberSubDTO.getPw().equals(memberSubDTO.getPwCheck())){
             throw new IllegalArgumentException("Passwords do not match");
         }
         Member member=Member.builder()
-                .email(memberSignupDTO.getEmail())
-                .pw(passwordEncoder.encode(memberSignupDTO.getPw()))
-                .nickname(memberSignupDTO.getNickname())
+                .email(memberSubDTO.getEmail())
+                .pw(passwordEncoder.encode(memberSubDTO.getPw()))
+                .nickname(memberSubDTO.getNickname())
                 .build();
         memberRepository.save(member);
 
     }
     //회원 정보 수정
     @Override
-    public void modifyMember(MemberModifyDTO memberModifyDTO) {
-        Optional<Member> result = memberRepository.findById(memberModifyDTO.getEmail());
+    public void modifyMember(MemberSubDTO memberSubDTO) {
+        Optional<Member> result = memberRepository.findById(memberSubDTO.getEmail());
         Member member = result.orElseThrow(() -> new NoSuchElementException("Member not found"));
 
-        member.changeNickname(memberModifyDTO.getNickname());
-        member.changePw(passwordEncoder.encode(memberModifyDTO.getPw()));
+        member.changeNickname(memberSubDTO.getNickname());
+        member.changePw(passwordEncoder.encode(memberSubDTO.getPw()));
 
         //        member.changeSocial(false);
         memberRepository.save(member);
     }
 
     @Override
-    public void deleteMember(MemberModifyDTO memberDTO) {
+    public void deleteMember(MemberSubDTO memberDTO) {
         Optional<Member> result = memberRepository.findById(memberDTO.getEmail());
         Member member = result.orElseThrow(() -> new NoSuchElementException("Member not found"));
 
