@@ -21,4 +21,6 @@ public class Voca {
     private String title;
     private String eng;
     private String kor;
+    private int section;
+
 }

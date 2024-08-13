@@ -1,11 +1,8 @@
 package org.intelli.intellimentor.repository;
 
-import lombok.extern.java.Log;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.domain.Voca;
-import org.intelli.intellimentor.dto.VocaDTO;
 import org.intelli.intellimentor.dto.VocaListDTO;
-import org.intelli.intellimentor.service.VocaService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,8 +32,8 @@ public class VocaRepositoryTests {
         }
         for(int i=0;i<3;i++){
             Voca voca = Voca.builder()
-                    .eng("engTest"+(i+100))
-                    .kor("한글테스트"+(i+100))
+                    .eng("engTest"+(i+10))
+                    .kor("한글테스트"+(i+10))
                     .title("테스트제목2")
                     .userId("user1@aaa.com")
                     .build();
@@ -46,7 +43,6 @@ public class VocaRepositoryTests {
         vocaRepository.saveAll(vocaList2);
 
     }
-
     @Test
     public void testReadVoca(){
         String userId = "user1@aaa.com";
@@ -60,9 +56,6 @@ public class VocaRepositoryTests {
         log.info(result2);
 
     }
-
-
-
     @Test
     public void testUpdateVoca(){
         String title="테스트제목1";
@@ -93,9 +86,35 @@ public class VocaRepositoryTests {
     @Test
     public void testDeleteVoca(){
         String userId="user1@aaa.com";
-        String title="테스트제목2";
-
+        String title="테스트업데이트제목1";
         vocaRepository.deleteByUserIdAndTitle(userId,title);
+    }
+    @Test
+    public void testDeleteAll(){
+        vocaRepository.deleteAll();
+    }
+    @Test
+    public void testSetSection(){
+        String userId="user1@aaa.com";
+        String title="테스트제목1";
+        int section = 2;
+
+        List<Voca> result = vocaRepository.findByUserIdAndTitle(userId,title);
+        int resultSize = result.size();
+
+        log.info("resultSize: "+resultSize);
+        log.info("섹션 설정 테스트: "+resultSize/section);
+
+        int i=1;
+        for(Voca voca:result){
+            voca.setSection(i);
+            i++;
+            if(section<i){
+                i=1;
+            }
+        }
+        vocaRepository.saveAll(result);
+        //
 
     }
 }
