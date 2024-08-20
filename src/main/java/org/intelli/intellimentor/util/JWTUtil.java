@@ -59,6 +59,10 @@ public class JWTUtil {
             throw new CustomJWTException("Error");
         }
         return claim;
-
+    }
+    public static String JWTtoEmail(String authHeader) {
+        String token = authHeader.substring(7);
+        Map<String, Object> claims = validateToken(token);
+        return (String) claims.get("email");
     }
 }

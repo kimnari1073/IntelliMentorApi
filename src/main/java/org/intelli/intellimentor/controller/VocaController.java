@@ -25,11 +25,9 @@ public class VocaController {
     public ResponseEntity<?> createVoca(
             @RequestHeader("Authorization") String authHeader,
             @RequestBody VocaDTO vocaDTO){
-        String token = authHeader.substring(7);
-        Map<String, Object> claims = JWTUtil.validateToken(token);
-
-
-        vocaService.createVoca((String)claims.get("email"),vocaDTO);
+        String email = JWTUtil.JWTtoEmail(authHeader);
+        vocaService.createVoca(email,vocaDTO);
+        
         return ResponseEntity.status(HttpStatus.CREATED).build();
 
     }
@@ -37,11 +35,9 @@ public class VocaController {
     //단어장 조회(리스트)
     @GetMapping("/read")
     public ResponseEntity<List<VocaListDTO>> readVoca(@RequestHeader("Authorization") String authHeader){
-        String token = authHeader.substring(7);
-        Map<String, Object> claims = JWTUtil.validateToken(token);
+        String email = JWTUtil.JWTtoEmail(authHeader);
+        List<VocaListDTO> result = vocaService.readVoca(email);
 
-
-        List<VocaListDTO> result = vocaService.readVoca((String) claims.get("email"));
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
@@ -50,10 +46,9 @@ public class VocaController {
     public ResponseEntity<VocaDTO> readDetailsVoca(
             @RequestHeader("Authorization") String authHeader,
             @PathVariable("title") String title){
-        String token = authHeader.substring(7);
-        Map<String, Object> claims = JWTUtil.validateToken(token);
+        String email = JWTUtil.JWTtoEmail(authHeader);
+        VocaDTO result = vocaService.readDetailsVoca(email,title);
 
-        VocaDTO result = vocaService.readDetailsVoca((String) claims.get("email"),title);
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
@@ -63,21 +58,18 @@ public class VocaController {
             @RequestHeader("Authorization") String authHeader,
             @PathVariable("title") String title,
             @RequestBody VocaDTO vocaDTO){
-        String token = authHeader.substring(7);
-        Map<String, Object> claims = JWTUtil.validateToken(token);
+        String email = JWTUtil.JWTtoEmail(authHeader);
+        vocaService.updateVoca(email,title,vocaDTO);
 
-        vocaService.updateVoca((String)claims.get("email"),title,vocaDTO);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
     @DeleteMapping("/delete/{title}")
     public  ResponseEntity<String> deleteVoca(
             @RequestHeader("Authorization") String authHeader,
             @PathVariable("title") String title){
-        String token = authHeader.substring(7);
-        Map<String, Object> claims = JWTUtil.validateToken(token);
+        String email = JWTUtil.JWTtoEmail(authHeader);
+        vocaService.deleteVoca(email,title);
 
-
-        vocaService.deleteVoca((String)claims.get("email"),title);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
