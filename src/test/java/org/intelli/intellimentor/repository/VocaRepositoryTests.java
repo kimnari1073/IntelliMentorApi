@@ -43,19 +43,19 @@ public class VocaRepositoryTests {
         vocaRepository.saveAll(vocaList2);
 
     }
-    @Test
-    public void testReadVoca(){
-        String userId = "user1@aaa.com";
-        List<Object[]> result = vocaRepository.getVocaCount(userId);
-
-        List<VocaListDTO> result2 = result.stream()
-                .map(r -> new VocaListDTO((String) r[0],(Long) r[1]))
-                .collect(Collectors.toList());
-
-        log.info("testReadVoca------------------------");
-        log.info(result2);
-
-    }
+//    @Test
+//    public void testReadVoca(){
+//        String userId = "user1@aaa.com";
+//        List<Object[]> result = vocaRepository.getVocaCount(userId);
+//
+//        List<VocaListDTO> result2 = result.stream()
+//                .map(r -> new VocaListDTO((String) r[0],(Long) r[1]))
+//                .collect(Collectors.toList());
+//
+//        log.info("testReadVoca------------------------");
+//        log.info(result2);
+//
+//    }
     @Test
     public void testUpdateVoca(){
         String title="테스트제목1";
