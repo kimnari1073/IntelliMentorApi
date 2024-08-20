@@ -2,16 +2,12 @@ package org.intelli.intellimentor.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.intelli.intellimentor.domain.Voca;
 import org.intelli.intellimentor.dto.VocaDTO;
 import org.intelli.intellimentor.dto.VocaListDTO;
-import org.intelli.intellimentor.dto.VocaModifyDTO;
 import org.intelli.intellimentor.service.VocaService;
 import org.intelli.intellimentor.util.JWTUtil;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,9 +22,15 @@ public class VocaController {
 
     //단어장 생성
     @PostMapping("/create")
-    public ResponseEntity<Map<String,String>> createVoca(@RequestBody VocaDTO vocaDTO){
-        vocaService.createVoca(vocaDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("title",vocaDTO.getTitle()));
+    public ResponseEntity<?> createVoca(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody VocaDTO vocaDTO){
+        String token = authHeader.substring(7);
+        Map<String, Object> claims = JWTUtil.validateToken(token);
+
+
+        vocaService.createVoca((String)claims.get("email"),vocaDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
 
     }
 
@@ -56,14 +58,26 @@ public class VocaController {
     }
 
     //단어장 수정
-    @PutMapping("/update")
-    public ResponseEntity<String> updateVoca(@RequestBody VocaModifyDTO vocaModifyDTO){
-        vocaService.updateVoca(vocaModifyDTO);
+    @PutMapping("/update/{title}")
+    public ResponseEntity<String> updateVoca(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable("title") String title,
+            @RequestBody VocaDTO vocaDTO){
+        String token = authHeader.substring(7);
+        Map<String, Object> claims = JWTUtil.validateToken(token);
+
+        vocaService.updateVoca((String)claims.get("email"),title,vocaDTO);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
-    @DeleteMapping("/delete")
-    public  ResponseEntity<String> deleteVoca(@RequestBody VocaDTO vocaDTO){
-        vocaService.deleteVoca(vocaDTO);
+    @DeleteMapping("/delete/{title}")
+    public  ResponseEntity<String> deleteVoca(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable("title") String title){
+        String token = authHeader.substring(7);
+        Map<String, Object> claims = JWTUtil.validateToken(token);
+
+
+        vocaService.deleteVoca((String)claims.get("email"),title);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

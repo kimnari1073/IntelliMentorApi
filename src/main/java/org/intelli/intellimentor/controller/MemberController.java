@@ -22,7 +22,6 @@ public class MemberController {
     //소셜 회원가입&로그인 - 카카오
     @GetMapping("/kakao")
     public Map<String,Object> getMemberFromKakao(String accessToken){
-        log.info("accessToken: "+accessToken);
         MemberDTO memberDTO = memberService.getKakaoMember(accessToken);
         Map<String,Object> claims = memberDTO.getClaims();
 
@@ -37,9 +36,9 @@ public class MemberController {
 
     //로컬 회원가입
     @PostMapping("/signup")
-    public ResponseEntity<Map<String,String>> signup(@RequestBody MemberSubDTO memberSubDTO){
+    public ResponseEntity<?> signup(@RequestBody MemberSubDTO memberSubDTO){
         memberService.register(memberSubDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("email",memberSubDTO.getEmail()));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     // 회원정보 수정

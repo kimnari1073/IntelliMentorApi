@@ -1,13 +1,11 @@
 package org.intelli.intellimentor.service;
 
-import com.sun.jdi.request.DuplicateRequestException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.controller.advice.exception.DuplicateDataException;
 import org.intelli.intellimentor.domain.Voca;
 import org.intelli.intellimentor.dto.VocaDTO;
 import org.intelli.intellimentor.dto.VocaListDTO;
-import org.intelli.intellimentor.dto.VocaModifyDTO;
 import org.intelli.intellimentor.repository.VocaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -26,8 +23,8 @@ public class VocaServiceImpl implements VocaService{
     private final VocaRepository vocaRepository;
 
     @Override
-    public void createVoca(VocaDTO vocaDTO) {
-        List<Voca> result = vocaRepository.findByUserIdAndTitle(vocaDTO.getUserId(), vocaDTO.getTitle());
+    public void createVoca(String email,VocaDTO vocaDTO) {
+        List<Voca> result = vocaRepository.findByUserIdAndTitle(email, vocaDTO.getTitle());
         if(!result.isEmpty()){
             throw new DuplicateDataException("단어장 제목이 중복됩니다.");
         }
@@ -35,7 +32,7 @@ public class VocaServiceImpl implements VocaService{
 
         for (int i = 0; i < vocaDTO.getEng().size(); i++) {
             Voca voca = Voca.builder()
-                    .userId(vocaDTO.getUserId())
+                    .userId(email)
                     .title(vocaDTO.getTitle())
                     .eng(vocaDTO.getEng().get(i))
                     .kor(vocaDTO.getKor().get(i))
@@ -60,7 +57,6 @@ public class VocaServiceImpl implements VocaService{
         List<Voca> result = vocaRepository.findByUserIdAndTitle(email,title);
         VocaDTO responseDTO = new VocaDTO();
 
-        responseDTO.setUserId(result.get(1).getUserId());
         responseDTO.setTitle(result.get(1).getTitle());
 
         List<String> eng = new ArrayList<>();
@@ -77,29 +73,17 @@ public class VocaServiceImpl implements VocaService{
     }
 
     @Override
-    public void updateVoca(VocaModifyDTO vocaModifyDTO) {
-        VocaDTO deleteVocaDTO = new VocaDTO();
-        deleteVocaDTO.setUserId(vocaModifyDTO.getUserId());
-        deleteVocaDTO.setTitle(vocaModifyDTO.getTitle());
-        deleteVoca(deleteVocaDTO);
-
-        VocaDTO createVocaDTO = new VocaDTO();
-        createVocaDTO.setUserId(vocaModifyDTO.getUserId());
-        createVocaDTO.setTitle(vocaModifyDTO.getModifiedTitle());
-        createVocaDTO.setEng(vocaModifyDTO.getModifiedEng());
-        createVocaDTO.setKor(vocaModifyDTO.getModifiedKor());
-        createVoca(createVocaDTO);
-
+    public void updateVoca(String email, String title,VocaDTO vocaDTO) {
+        deleteVoca(email,title);
+        createVoca(email,vocaDTO);
     }
 
     @Override
-    public void deleteVoca(VocaDTO vocaDTO) {
-        String userId=vocaDTO.getUserId();
-        String title= vocaDTO.getTitle();
-        List<Voca> result = vocaRepository.findByUserIdAndTitle(userId,title);
+    public void deleteVoca(String email,String title) {
+        List<Voca> result = vocaRepository.findByUserIdAndTitle(email,title);
         if(result.isEmpty()){
             throw new NoSuchElementException();
         }
-        vocaRepository.deleteByUserIdAndTitle(userId,title);
+        vocaRepository.deleteByUserIdAndTitle(email,title);
     }
 }
