@@ -70,22 +70,30 @@ public class MemberServiceImpl implements MemberService{
     //회원 정보 수정
     @Override
     public void modifyMember(MemberSubDTO memberSubDTO) {
+        log.info("memberDubDTO - service: "+memberSubDTO);
         Optional<Member> result = memberRepository.findById(memberSubDTO.getEmail());
         Member member = result.orElseThrow(() -> new NoSuchElementException("Member not found"));
 
         member.changeNickname(memberSubDTO.getNickname());
         member.changePw(passwordEncoder.encode(memberSubDTO.getPw()));
 
-        //        member.changeSocial(false);
         memberRepository.save(member);
     }
 
+    //회원 삭제
     @Override
-    public void deleteMember(MemberSubDTO memberDTO) {
-        Optional<Member> result = memberRepository.findById(memberDTO.getEmail());
-        Member member = result.orElseThrow(() -> new NoSuchElementException("Member not found"));
+    public void deleteMember(String email) {
+        try {
+            Optional<Member> result = memberRepository.findById(email);
+            Member member = result.orElseThrow(() -> new NoSuchElementException("Member not found"));
+            memberRepository.delete(member);
+        } catch (NoSuchElementException e) {
+            log.warn("Attempted to delete a member that was not found: " + email);
+        }
 
-        memberRepository.delete(member);
+
+
+
     }
 
 

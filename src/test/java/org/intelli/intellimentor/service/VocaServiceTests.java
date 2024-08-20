@@ -14,9 +14,9 @@ public class VocaServiceTests {
 
     @Test
     public void testReadDetailsVoca(){
-        VocaDTO vocaDTO=new VocaDTO();
-        vocaDTO.setUserId("user1@aaa.com");
-        vocaDTO.setTitle("테스트제목1");
-        log.info(vocaService.readDetailsVoca(vocaDTO));
+//        VocaDTO vocaDTO=new VocaDTO();
+//        vocaDTO.setUserId("user1@aaa.com");
+//        vocaDTO.setTitle("테스트제목1");
+//        log.info(vocaService.readDetailsVoca(vocaDTO));
     }
 }

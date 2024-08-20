@@ -12,7 +12,7 @@ public interface MemberService {
     MemberDTO getKakaoMember(String accessToken);
     void register(MemberSubDTO memberSubDTO);
     void modifyMember(MemberSubDTO memberSubDTO);
-    void deleteMember(MemberSubDTO memberDTO);
+    void deleteMember(String email);
     default MemberDTO entityToDTO(Member member){
         MemberDTO dto = new MemberDTO(
                 member.getEmail(),

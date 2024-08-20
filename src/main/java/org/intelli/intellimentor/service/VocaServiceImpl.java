@@ -47,8 +47,8 @@ public class VocaServiceImpl implements VocaService{
     }
 
     @Override
-    public List<VocaListDTO> readVoca(VocaDTO vocaDTO) {
-        List<Object[]> result = vocaRepository.getVocaCount(vocaDTO.getUserId());
+    public List<VocaListDTO> readVoca(String email) {
+        List<Object[]> result = vocaRepository.getVocaCount(email);
 
         return result.stream()
                 .map(r-> new VocaListDTO((String)r[0],(Long)r[1]))
@@ -56,8 +56,8 @@ public class VocaServiceImpl implements VocaService{
     }
 
     @Override
-    public VocaDTO readDetailsVoca(VocaDTO vocaDTO) {
-        List<Voca> result = vocaRepository.findByUserIdAndTitle(vocaDTO.getUserId(),vocaDTO.getTitle());
+    public VocaDTO readDetailsVoca(String email, String title) {
+        List<Voca> result = vocaRepository.findByUserIdAndTitle(email,title);
         VocaDTO responseDTO = new VocaDTO();
 
         responseDTO.setUserId(result.get(1).getUserId());

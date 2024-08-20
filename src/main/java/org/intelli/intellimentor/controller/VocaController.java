@@ -7,6 +7,7 @@ import org.intelli.intellimentor.dto.VocaDTO;
 import org.intelli.intellimentor.dto.VocaListDTO;
 import org.intelli.intellimentor.dto.VocaModifyDTO;
 import org.intelli.intellimentor.service.VocaService;
+import org.intelli.intellimentor.util.JWTUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -33,15 +34,24 @@ public class VocaController {
 
     //단어장 조회(리스트)
     @GetMapping("/read")
-    public ResponseEntity<List<VocaListDTO>> readVoca(@RequestBody VocaDTO vocaDTO){
-        List<VocaListDTO> result = vocaService.readVoca(vocaDTO);
+    public ResponseEntity<List<VocaListDTO>> readVoca(@RequestHeader("Authorization") String authHeader){
+        String token = authHeader.substring(7);
+        Map<String, Object> claims = JWTUtil.validateToken(token);
+
+
+        List<VocaListDTO> result = vocaService.readVoca((String) claims.get("email"));
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     //단어장 조회(상세)
-    @GetMapping("/read/details")
-    public ResponseEntity<VocaDTO> readDetailsVoca(@RequestBody VocaDTO vocaDTO){
-        VocaDTO result = vocaService.readDetailsVoca(vocaDTO);
+    @GetMapping("/read/{title}")
+    public ResponseEntity<VocaDTO> readDetailsVoca(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable("title") String title){
+        String token = authHeader.substring(7);
+        Map<String, Object> claims = JWTUtil.validateToken(token);
+
+        VocaDTO result = vocaService.readDetailsVoca((String) claims.get("email"),title);
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
