@@ -28,7 +28,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
         // JWT 검증을 하지 않을 경로 설정
         if (path.startsWith("/api/member/login")
                 || path.startsWith("/api/member/kakao")
-                || path.startsWith(("api/member/signup"))) {
+                || path.startsWith(("/api/member/signup"))) {
             return true;
         }
         //false == check
