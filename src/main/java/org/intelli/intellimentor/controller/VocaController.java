@@ -34,10 +34,9 @@ public class VocaController {
 
     //단어장 조회(리스트)
     @GetMapping("/read")
-    public ResponseEntity<List<VocaListDTO>> readVoca(@RequestHeader("Authorization") String authHeader){
+    public ResponseEntity<?> readVoca(@RequestHeader("Authorization") String authHeader){
         String email = JWTUtil.JWTtoEmail(authHeader);
         List<VocaListDTO> result = vocaService.readVoca(email);
-
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
