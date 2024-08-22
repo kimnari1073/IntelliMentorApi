@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class LearnRequestDTO {
     private String title;
-    private String section;
+    private int section;
     private String currentSec;
 }
