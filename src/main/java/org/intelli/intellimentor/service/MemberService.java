@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.stream.Collectors;
 
-@Transactional
 public interface MemberService {
     MemberDTO getKakaoMember(String accessToken);
     void register(MemberSubDTO memberSubDTO);

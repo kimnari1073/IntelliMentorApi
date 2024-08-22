@@ -1,43 +1,36 @@
 package org.intelli.intellimentor.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.domain.Voca;
 import org.intelli.intellimentor.repository.VocaRepository;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
-@SpringBootTest
+@Service
+@Transactional
+@RequiredArgsConstructor
 @Log4j2
-public class LearnServiceTests {
-    @Autowired
-    private VocaRepository vocaRepository;
-
-    @Test
-    public void testCreateLearn(){
-        String email = "user1@aaa.com";
-        String title="토익";
-        int requestSection = 3;
-
+public class LearnServiceImpl implements LearnService{
+    private final VocaRepository vocaRepository;
+    @Override
+    public void createLearn(String email, String title, int section) {
         List<Voca> vocaList = vocaRepository.findByUserIdAndTitle(email,title);
+        //섹션 설정
         for (int i = 0; i < vocaList.size(); i++) {
-            int section = (i % requestSection) + 1;
-            vocaList.get(i).setSection(section);
+            int sec = (i % section) + 1;
+            vocaList.get(i).setSection(sec);
         }
         vocaRepository.saveAll(vocaList);
     }
 
-    //section:1
-    //word:{key:value},{key:value}...
-    //section:2
-    //word:{key:value}...
-    @Test
-    public void testReadLearn(){
-        String email="user1@aaa.com";
-        String title="토익";
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, Object> readLearn(String email, String title) {
         List<Object[]>result = vocaRepository.findWordsGroupedBySection(email,title);
+
         Map<Integer, List<List<String>>> sectionMap = new LinkedHashMap<>();
 
         // 데이터 그룹화 및 변환
@@ -62,16 +55,6 @@ public class LearnServiceTests {
 
         Map<String, Object> resultData = new LinkedHashMap<>();
         resultData.put("data", sections);
-        log.info(resultData);
-    }
-
-    @Test
-    public void testUpdateLearn(){
-
-    }
-
-    @Test
-    public void testDeleteLearn(){
-
+        return resultData;
     }
 }

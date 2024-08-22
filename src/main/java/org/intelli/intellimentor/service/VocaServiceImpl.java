@@ -44,6 +44,7 @@ public class VocaServiceImpl implements VocaService{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<VocaListDTO> readVoca(String email) {
         List<Object[]> result = vocaRepository.getVocaList(email);
         if(result.isEmpty()) return null;
@@ -53,6 +54,7 @@ public class VocaServiceImpl implements VocaService{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public VocaDTO readDetailsVoca(String email, String title) {
         List<Voca> result = vocaRepository.findByUserIdAndTitle(email,title);
         VocaDTO responseDTO = new VocaDTO();
