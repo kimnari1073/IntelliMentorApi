@@ -45,10 +45,10 @@ public class VocaServiceImpl implements VocaService{
 
     @Override
     public List<VocaListDTO> readVoca(String email) {
-        List<Object[]> result = vocaRepository.getVocaCount(email);
+        List<Object[]> result = vocaRepository.getVocaList(email);
         if(result.isEmpty()) return null;
         return result.stream()
-                .map(r-> new VocaListDTO((String)r[0],(Long)r[1]))
+                .map(r-> new VocaListDTO((String)r[0],(Long)r[1],(int)r[2]))
                 .toList();
     }
 

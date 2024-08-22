@@ -11,8 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface VocaRepository extends JpaRepository<Voca,Long> {
-    @Query("select v.title,COUNT(v) from Voca v WHERE v.userId = :userId GROUP BY v.title")
-    List<Object[]> getVocaCount(@Param("userId")String userId);
+    @Query("select v.title,COUNT(v),MAX(v.section) from Voca v WHERE v.userId = :userId GROUP BY v.title")
+    List<Object[]> getVocaList(@Param("userId")String userId);
 
     // 특정 userId와 title을 기준으로 데이터 조회
     List<Voca> findByUserIdAndTitle(@Param("userId") String userId, @Param("title") String title);
