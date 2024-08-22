@@ -45,4 +45,9 @@ public class MemberRepositoryTests {
         log.info(member);
         log.info(member.getMemberRoleList());
     }
+
+    @Test
+    public void testDeleteAll(){
+        memberRepository.deleteAll();
+    }
 }

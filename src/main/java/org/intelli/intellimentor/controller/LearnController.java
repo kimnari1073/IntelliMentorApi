@@ -15,13 +15,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/learn")
 public class LearnController {
 
+
+    //request: 토큰,제목,섹션
     @PostMapping("/create")
     public ResponseEntity<?> createLearn(@RequestHeader("Authorization")String authHeader){
         String eamil = JWTUtil.JWTtoEmail(authHeader);
 
         return null;
     }
-    //C R U D
+    //C토큰제목/ R U D
     //조회: 단어장제목,영어,한글,섹션 {[섹션:1,단어:[eng,kor]],[섹션,단어]}]
     //List<LearnDTO>
     //{
