@@ -10,6 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
+
 @RestController
 @Log4j2
 @RequiredArgsConstructor
@@ -21,23 +24,18 @@ public class LearnController {
     @PostMapping("/create")
     public ResponseEntity<?> createLearn(
             @RequestHeader("Authorization")String authHeader,
-            @RequestBody LearnRequestDTO learnRequestDTO
-    ){
+            @RequestBody LearnRequestDTO learnRequestDTO){
         String email = JWTUtil.JWTtoEmail(authHeader);
         learnService.createLearn(email,learnRequestDTO.getTitle(),learnRequestDTO.getSection());
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-    //C토큰제목/ R U D
-    //조회: 단어장제목,영어,한글,섹션 {[섹션:1,단어:[eng,kor]],[섹션,단어]}]
-    //List<LearnDTO>
-    //{
-    // [section:1,
-    //  word:[{apple:사과},{banana:바나나}]
-    //  ],
-    // [section:2,
-    //  word:[{...},{...}]
-    // ]
-    //}
 
-    //섹션 나누기
+    @GetMapping("/read/{title}")
+    public ResponseEntity<?> readLearn(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable("title") String title){
+        String email = JWTUtil.JWTtoEmail(authHeader);
+        Map<String, Object> result = learnService.readLearn(email,title);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
 }
