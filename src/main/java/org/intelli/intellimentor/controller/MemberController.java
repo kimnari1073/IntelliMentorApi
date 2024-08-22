@@ -68,36 +68,32 @@ public class MemberController {
 
 
     //리프레쉬 토큰
-    @RequestMapping("/api/member/refresh")
+    @PostMapping("/api/member/refresh")
     public Map<String, Object> refresh(
             @RequestHeader("Authorization") String authHeader,
-            String refreshToken
-    ) {
+            @RequestHeader("X-Refresh-Token") String refreshToken) {
         if (refreshToken == null) {
             throw new CustomJWTException("NULL_REFRESH");
         }
         if (authHeader == null || authHeader.length() < 7) {
             throw new CustomJWTException("INVALID STRING");
         }
-        //Barer xxxx...
+
         String accessToken = authHeader.substring(7);
 
-        //AccessToken의 만료 여부 확인
         if (!checkExpiredToken(accessToken)) {
             return Map.of("accessToken", accessToken, "refreshToken", refreshToken);
         }
 
-        //Refresh 토근 검증
         Map<String, Object> claims = JWTUtil.validateToken(refreshToken);
         log.info("refresh ... claims: " + claims);
 
         String newAccessToken = JWTUtil.generateToken(claims, 10);
-
         String newRefreshToken = checkTime((Integer) claims.get("exp")) ? JWTUtil.generateToken(claims, 60 * 24) : refreshToken;
-
 
         return Map.of("accessToken", newAccessToken, "refreshToken", newRefreshToken);
     }
+
 
     //RefreshToken의 시간이 1시간 미만으로 남았다면
     private boolean checkTime(Integer exp) {
