@@ -2,7 +2,7 @@ package org.intelli.intellimentor.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.intelli.intellimentor.controller.advice.exception.DuplicateDataException;
+import org.intelli.intellimentor.util.exception.DuplicateDataException;
 import org.intelli.intellimentor.domain.Voca;
 import org.intelli.intellimentor.dto.VocaDTO;
 import org.intelli.intellimentor.dto.VocaListDTO;

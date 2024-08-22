@@ -1,8 +1,7 @@
-package org.intelli.intellimentor.controller.advice;
+package org.intelli.intellimentor.util;
 
 
-import org.intelli.intellimentor.controller.advice.exception.DuplicateDataException;
-import org.intelli.intellimentor.util.CustomJWTException;
+import org.intelli.intellimentor.util.exception.DuplicateDataException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
