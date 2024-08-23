@@ -37,29 +37,37 @@ public class LearnServiceTests {
     public void testReadLearn(){
         String email="user1@aaa.com";
         String title="토익";
-        List<Object[]>result = vocaRepository.findWordsGroupedBySection(email,title);
-        Map<Integer, List<List<String>>> sectionMap = new LinkedHashMap<>();
+        List<Object[]>result = vocaRepository.findDataGroupBySection(email,title);
+        Map<Integer, List<Map<String, Object>>> sectionMap = new LinkedHashMap<>();
 
-        // 데이터 그룹화 및 변환
         for (Object[] row : result) {
             Integer section = (Integer) row[0];
             String eng = (String) row[1];
             String kor = (String) row[2];
+            Boolean bookmark = (Boolean) row[3];
+            Integer mistakes = (Integer) row[4];
 
-            List<String> wordPair = Arrays.asList(eng, kor);
+            // 단어의 세부 정보를 Map으로 저장
+            Map<String, Object> wordMap = new LinkedHashMap<>();
+            wordMap.put("eng", eng);
+            wordMap.put("kor", kor);
+            wordMap.put("bookmark", bookmark);
+            wordMap.put("mistakes", mistakes);
 
-            sectionMap.computeIfAbsent(section, k -> new ArrayList<>()).add(wordPair);
+            // 해당 섹션에 단어 추가
+            sectionMap.computeIfAbsent(section, k -> new ArrayList<>()).add(wordMap);
         }
 
         // JSON 변환을 위한 구조 생성
         List<Map<String, Object>> sections = new ArrayList<>();
-        for (Map.Entry<Integer, List<List<String>>> entry : sectionMap.entrySet()) {
+        for (Map.Entry<Integer, List<Map<String, Object>>> entry : sectionMap.entrySet()) {
             Map<String, Object> sectionData = new LinkedHashMap<>();
             sectionData.put("section", entry.getKey());
             sectionData.put("words", entry.getValue());
             sections.add(sectionData);
         }
 
+        // 최종 JSON 데이터 구조
         Map<String, Object> resultData = new LinkedHashMap<>();
         resultData.put("data", sections);
         log.info(resultData);

@@ -22,5 +22,7 @@ public class Voca {
     private String eng;
     private String kor;
     private int section;
+    private boolean bookmark;
+    private int mistakes;
 
 }

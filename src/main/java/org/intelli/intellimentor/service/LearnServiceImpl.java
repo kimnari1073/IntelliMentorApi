@@ -29,7 +29,7 @@ public class LearnServiceImpl implements LearnService{
     @Override
     @Transactional(readOnly = true)
     public Map<String, Object> readLearn(String email, String title) {
-        List<Object[]>result = vocaRepository.findWordsGroupedBySection(email,title);
+        List<Object[]>result = vocaRepository.findDataGroupBySection(email,title);
 
         Map<Integer, List<List<String>>> sectionMap = new LinkedHashMap<>();
 

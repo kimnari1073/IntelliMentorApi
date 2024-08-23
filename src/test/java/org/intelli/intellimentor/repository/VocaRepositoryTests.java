@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @SpringBootTest
@@ -19,8 +20,11 @@ public class VocaRepositoryTests {
 
     @Test
     public void testInsertVoca(){
+        vocaRepository.deleteAll();
         List<Voca> vocaList1 = new ArrayList<>();
         List<Voca> vocaList2 = new ArrayList<>();
+        int vocaList1Sec=2;
+        int vocaList2Sec=4;
         String[] englishWords1 = {
                 "perseverance", "elaborate", "contemplate", "subtle", "innovative",
                 "benevolent", "resilient", "meticulous", "ephemeral", "lucid"};
@@ -42,12 +46,16 @@ public class VocaRepositoryTests {
                 "캠핑", "리조트", "여행", "트레킹", "여행 안내서",
                 "통화", "짐", "승선하다", "환승", "비자"};
 
+        Random random = new Random();
         for(int i=0; i<englishWords1.length; i++){
             Voca voca = Voca.builder()
                     .eng(englishWords1[i])
                     .kor(meanings1[i])
                     .title("토익")
                     .userId("user1@aaa.com")
+                    .bookmark(random.nextBoolean())
+                    .mistakes(random.nextInt(10)+1)
+                    .section(i%vocaList1Sec+1)
                     .build();
             vocaList1.add(voca);
         }
@@ -57,6 +65,9 @@ public class VocaRepositoryTests {
                     .kor(meanings2[i])
                     .title("여행관련영어")
                     .userId("user1@aaa.com")
+                    .bookmark(random.nextBoolean())
+                    .mistakes(random.nextInt(10)+1)
+                    .section(i%vocaList2Sec+1)
                     .build();
             vocaList2.add(voca);
         }
@@ -65,18 +76,8 @@ public class VocaRepositoryTests {
 
     }
 //    @Test
-//    public void testReadVoca(){
-//        String userId = "user1@aaa.com";
-//        List<Object[]> result = vocaRepository.getVocaCount(userId);
-//
-//        List<VocaListDTO> result2 = result.stream()
-//                .map(r -> new VocaListDTO((String) r[0],(Long) r[1]))
-//                .collect(Collectors.toList());
-//
-//        log.info("testReadVoca------------------------");
-//        log.info(result2);
-//
-//    }
+    public void testReadVoca(){
+    }
     @Test
     public void testUpdateVoca(){
         String title="테스트제목1";
@@ -110,33 +111,5 @@ public class VocaRepositoryTests {
         String title="테스트업데이트제목1";
         vocaRepository.deleteByUserIdAndTitle(userId,title);
     }
-    @Test
-    public void testDeleteAll(){
-        vocaRepository.deleteAll();
-    }
 
-    @Test
-    public void testSetSection(){
-        String userId="user1@aaa.com";
-        String title="토익";
-        int section = 2;
-
-        List<Voca> result = vocaRepository.findByUserIdAndTitle(userId,title);
-        int resultSize = result.size();
-
-        log.info("resultSize: "+resultSize);
-        log.info("섹션 설정 테스트: "+resultSize/section);
-
-        int i=1;
-        for(Voca voca:result){
-            voca.setSection(i);
-            i++;
-            if(section<i){
-                i=1;
-            }
-        }
-        vocaRepository.saveAll(result);
-        //
-
-    }
 }
