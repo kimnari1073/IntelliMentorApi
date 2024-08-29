@@ -68,8 +68,8 @@ public class MemberController {
 
 
     //리프레쉬 토큰
-    @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "x-Refresh-Token")
-    @PostMapping("/api/member/refresh")
+    @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "X-Refresh-Token")
+    @PostMapping("/refresh")
     public Map<String, Object> refresh(
             @RequestHeader("Authorization") String authHeader,
             @RequestHeader("X-Refresh-Token") String refreshToken) {

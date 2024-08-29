@@ -34,6 +34,8 @@ public class LearnController {
     public ResponseEntity<?> readLearn(
             @RequestHeader("Authorization") String authHeader,
             @PathVariable("title") String title){
+        log.info("title: "+title);
+
         String email = JWTUtil.JWTtoEmail(authHeader);
         Map<String, Object> result = learnService.readLearn(email,title);
         return ResponseEntity.status(HttpStatus.OK).body(result);
