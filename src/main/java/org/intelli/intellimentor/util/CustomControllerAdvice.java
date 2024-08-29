@@ -19,7 +19,7 @@ public class CustomControllerAdvice {
         return ResponseEntity.ok().body(Map.of("error",e.getMessage()));
     }
     @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<Map<String, String>> handleNoSuchElementException(NoSuchElementException ex) {
+    public ResponseEntity<?> handleNoSuchElementException(NoSuchElementException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("ERROR_MESSAGE", ex.getMessage()));
     }
 
@@ -36,6 +36,10 @@ public class CustomControllerAdvice {
     public ResponseEntity<?> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
         //"Request body is missing, but the process completed successfully."
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<?> handleNullPointerException(NullPointerException ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("ERROE_MESSAGE",ex.getMessage()));
     }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleException(Exception ex) {
