@@ -1,5 +1,6 @@
 package org.intelli.intellimentor.controller;
 
+import jdk.jshell.Snippet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.dto.MemberDTO;
@@ -70,29 +71,34 @@ public class MemberController {
     //리프레쉬 토큰
     @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "X-Refresh-Token")
     @PostMapping("/refresh")
-    public Map<String, Object> refresh(
+    public ResponseEntity<Map<String, Object>> refresh(
             @RequestHeader("Authorization") String authHeader,
             @RequestHeader("X-Refresh-Token") String refreshToken) {
-        if (refreshToken == null) {
-            throw new CustomJWTException("NULL_REFRESH");
+        try {
+            if (refreshToken == null) {
+                throw new CustomJWTException("NULL_REFRESH");
+            }
+            if (authHeader == null || authHeader.length() < 7) {
+                throw new CustomJWTException("INVALID STRING");
+            }
+
+            String accessToken = authHeader.substring(7);
+
+            if (!checkExpiredToken(accessToken)) {
+                return ResponseEntity.status(HttpStatus.OK).body(Map.of("accessToken", accessToken, "refreshToken", refreshToken));
+            }
+
+            Map<String, Object> claims = JWTUtil.validateToken(refreshToken);
+            log.info("refresh ... claims: " + claims);
+
+            String newAccessToken = JWTUtil.generateToken(claims, 10);
+            String newRefreshToken = checkTime((Integer) claims.get("exp")) ? JWTUtil.generateToken(claims, 60 * 24) : refreshToken;
+            return ResponseEntity.status(HttpStatus.OK).body(Map.of("accessToken", newAccessToken, "refreshToken", newRefreshToken));
+
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        if (authHeader == null || authHeader.length() < 7) {
-            throw new CustomJWTException("INVALID STRING");
-        }
 
-        String accessToken = authHeader.substring(7);
-
-        if (!checkExpiredToken(accessToken)) {
-            return Map.of("accessToken", accessToken, "refreshToken", refreshToken);
-        }
-
-        Map<String, Object> claims = JWTUtil.validateToken(refreshToken);
-        log.info("refresh ... claims: " + claims);
-
-        String newAccessToken = JWTUtil.generateToken(claims, 10);
-        String newRefreshToken = checkTime((Integer) claims.get("exp")) ? JWTUtil.generateToken(claims, 60 * 24) : refreshToken;
-
-        return Map.of("accessToken", newAccessToken, "refreshToken", newRefreshToken);
     }
 
 
