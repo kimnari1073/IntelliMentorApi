@@ -69,7 +69,6 @@ public class MemberController {
 
 
     //리프레쉬 토큰
-    @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "X-Refresh-Token")
     @PostMapping("/refresh")
     public ResponseEntity<Map<String, Object>> refresh(
             @RequestHeader("Authorization") String authHeader,

@@ -65,16 +65,26 @@ public class CustomSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration configuration = new CorsConfiguration();
+
+        // 모든 Origin을 허용
         configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+
+        // 허용할 HTTP 메서드 지정
         configuration.setAllowedMethods(Arrays.asList("HEAD","GET","POST","PUT","DELETE","OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization","Cache-Control","Content-Type"));
+
+        // 모든 헤더를 허용하도록 설정
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+
+        // 자격 증명(쿠키, 인증 헤더 등)을 허용
         configuration.setAllowCredentials(true);
 
+        // CORS 설정을 적용할 경로 패턴을 지정
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**",configuration);
+        source.registerCorsConfiguration("/**", configuration);
 
         return source;
     }
+
 
 
 }
