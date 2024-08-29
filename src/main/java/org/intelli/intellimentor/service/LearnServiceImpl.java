@@ -60,4 +60,9 @@ public class LearnServiceImpl implements LearnService{
         resultData.put("data", sections);
         return resultData;
     }
+
+    @Override
+    public void deleteLearn(String email, String title) {
+        vocaRepository.deleteLearn(email,title);
+    }
 }

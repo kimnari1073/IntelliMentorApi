@@ -57,9 +57,12 @@ public class VocaServiceImpl implements VocaService{
     @Transactional(readOnly = true)
     public VocaDTO readDetailsVoca(String email, String title) {
         List<Voca> result = vocaRepository.findByUserIdAndTitle(email,title);
+        log.info("result: "+result);
+        if (result.isEmpty()) {
+            throw new NoSuchElementException("No Voca found for the given userId and title");
+        }
         VocaDTO responseDTO = new VocaDTO();
-
-        responseDTO.setTitle(result.get(1).getTitle());
+        responseDTO.setTitle(result.get(0).getTitle());
 
         List<String> eng = new ArrayList<>();
         List<String> kor = new ArrayList<>();
@@ -86,6 +89,6 @@ public class VocaServiceImpl implements VocaService{
         if(result.isEmpty()){
             throw new NoSuchElementException();
         }
-        vocaRepository.deleteByUserIdAndTitle(email,title);
+        vocaRepository.deleteVocaList(email,title);
     }
 }

@@ -40,4 +40,14 @@ public class LearnController {
         Map<String, Object> result = learnService.readLearn(email,title);
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
+
+    //학습초기화
+    @DeleteMapping("/reset/{title}")
+    public ResponseEntity<?> deleteLearn(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable("title") String title){
+        String email = JWTUtil.JWTtoEmail(authHeader);
+        learnService.deleteLearn(email,title);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 }
