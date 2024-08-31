@@ -70,7 +70,7 @@ public class CustomSecurityConfig {
         configuration.setAllowedOriginPatterns(Arrays.asList("*"));
 
         // 허용할 HTTP 메서드 지정
-        configuration.setAllowedMethods(Arrays.asList("HEAD","GET","POST","PUT","DELETE","OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("HEAD","GET","POST","PUT","DELETE","PATCH","OPTIONS"));
 
         // 모든 헤더를 허용하도록 설정
         configuration.setAllowedHeaders(Arrays.asList("*"));

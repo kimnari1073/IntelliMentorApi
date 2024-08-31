@@ -22,11 +22,11 @@ public interface VocaRepository extends JpaRepository<Voca,Long> {
     List<Voca> findByUserIdAndTitleAndSection(@Param("userId") String userId, @Param("title") String title, @Param("section") int section);
 
     //섹션별 단어 리스트
-    @Query("SELECT v " +
-            "FROM Voca v " +
+    @Query("SELECT v FROM Voca v " +
             "WHERE v.userId = :userId AND v.title = :title " +
             "ORDER BY v.section ASC, v.bookmark DESC")
     List<Voca> findVocaOrderBySection(@Param("userId") String userId, @Param("title") String title);
+
     @Transactional
     @Modifying
     @Query("DELETE FROM Voca v " +
