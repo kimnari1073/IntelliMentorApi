@@ -16,7 +16,7 @@ import java.util.*;
 public class LearnServiceImpl implements LearnService{
     private final VocaRepository vocaRepository;
     @Override
-    public void createLearn(String email, String title, int section) {
+    public void createSection(String email, String title, int section) {
         List<Voca> vocaList = vocaRepository.findByUserIdAndTitle(email,title);
         //섹션 설정
         for (int i = 0; i < vocaList.size(); i++) {

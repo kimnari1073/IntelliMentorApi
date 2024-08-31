@@ -20,14 +20,13 @@ import java.util.Map;
 public class LearnController {
     private final LearnService learnService;
 
-    //request: 토큰,제목,섹션
-    @PostMapping("/create")
-    public ResponseEntity<?> createLearn(
+    @PatchMapping("/create")
+    public ResponseEntity<?> createSection(
             @RequestHeader("Authorization")String authHeader,
             @RequestBody LearnRequestDTO learnRequestDTO){
         String email = JWTUtil.JWTtoEmail(authHeader);
-        learnService.createLearn(email,learnRequestDTO.getTitle(),learnRequestDTO.getSection());
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        learnService.createSection(email,learnRequestDTO.getTitle(),learnRequestDTO.getSection());
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @GetMapping("/read/{title}")
