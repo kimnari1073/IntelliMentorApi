@@ -14,6 +14,8 @@ import java.util.*;
 public class LearnServiceTests {
     @Autowired
     private VocaRepository vocaRepository;
+    @Autowired
+    private LearnService learnService;
 
     @Test
     public void testCreateLearn(){
@@ -37,25 +39,18 @@ public class LearnServiceTests {
     public void testReadLearn(){
         String email="user1@aaa.com";
         String title="토익";
-        List<Object[]>result = vocaRepository.findDataGroupBySection(email,title);
+        List<Voca>result = vocaRepository.findVocaOrderBySection(email,title);
         Map<Integer, List<Map<String, Object>>> sectionMap = new LinkedHashMap<>();
 
-        for (Object[] row : result) {
-            Integer section = (Integer) row[0];
-            String eng = (String) row[1];
-            String kor = (String) row[2];
-            Boolean bookmark = (Boolean) row[3];
-            Integer mistakes = (Integer) row[4];
-
-            // 단어의 세부 정보를 Map으로 저장
+        for (Voca row : result) {
             Map<String, Object> wordMap = new LinkedHashMap<>();
-            wordMap.put("eng", eng);
-            wordMap.put("kor", kor);
-            wordMap.put("bookmark", bookmark);
-            wordMap.put("mistakes", mistakes);
+            wordMap.put("eng", row.getEng());
+            wordMap.put("kor", row.getKor());
+            wordMap.put("bookmark", row.isBookmark());
+            wordMap.put("mistakes", row.getMistakes());
 
             // 해당 섹션에 단어 추가
-            sectionMap.computeIfAbsent(section, k -> new ArrayList<>()).add(wordMap);
+            sectionMap.computeIfAbsent(row.getSection(), k -> new ArrayList<>()).add(wordMap);
         }
 
         // JSON 변환을 위한 구조 생성
@@ -80,6 +75,11 @@ public class LearnServiceTests {
 
     @Test
     public void testDeleteLearn(){
+
+    }
+
+    @Test
+    public void testCreateQuiz(){
 
     }
 }

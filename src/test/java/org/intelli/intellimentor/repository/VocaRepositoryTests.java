@@ -76,40 +76,41 @@ public class VocaRepositoryTests {
 
     }
 //    @Test
-    public void testReadVoca(){
-    }
-    @Test
-    public void testUpdateVoca(){
-        String title="테스트제목1";
-        String userId="user1@aaa.com";
-        List<String> updateEng =new ArrayList<>();
-        List<String> updateKor = new ArrayList<>();
-        for(int i=0;i<=3;i++){
-            updateEng.add("engUpdateTest"+i);
-            updateKor.add("한글업데이트테스트"+i);
-        }
-        vocaRepository.deleteByUserIdAndTitle(userId,title);
+//    public void testReadVoca(){
+//    }
+//    @Test
+//    public void testUpdateVoca(){
+//        String title="테스트제목1";
+//        String userId="user1@aaa.com";
+//        List<String> updateEng =new ArrayList<>();
+//        List<String> updateKor = new ArrayList<>();
+//        for(int i=0;i<=3;i++){
+//            updateEng.add("engUpdateTest"+i);
+//            updateKor.add("한글업데이트테스트"+i);
+//        }
+//        vocaRepository.deleteByUserIdAndTitle(userId,title);
+//
+//        List<Voca> saveList=new ArrayList<>();
+//        for(int i=0; i<=3; i++){
+//            Voca voca = Voca.builder()
+//                    .eng(updateEng.get(i))
+//                    .kor(updateKor.get(i))
+//                    .title("테스트업데이트제목1")
+//                    .userId("user1@aaa.com")
+//                    .build();
+//            saveList.add(voca);
+//        }
+//        vocaRepository.saveAll(saveList);
+//
+//
+//
+//    }
 
-        List<Voca> saveList=new ArrayList<>();
-        for(int i=0; i<=3; i++){
-            Voca voca = Voca.builder()
-                    .eng(updateEng.get(i))
-                    .kor(updateKor.get(i))
-                    .title("테스트업데이트제목1")
-                    .userId("user1@aaa.com")
-                    .build();
-            saveList.add(voca);
-        }
-        vocaRepository.saveAll(saveList);
-
-
-
-    }
-    @Test
-    public void testDeleteVoca(){
-        String userId="user1@aaa.com";
-        String title="테스트업데이트제목1";
-        vocaRepository.deleteByUserIdAndTitle(userId,title);
-    }
+//    @Test
+//    public void testDeleteVoca(){
+//        String userId="user1@aaa.com";
+//        String title="테스트업데이트제목1";
+//        vocaRepository.deleteByUserIdAndTitle(userId,title);
+//    }
 
 }

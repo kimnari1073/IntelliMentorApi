@@ -15,14 +15,18 @@ public interface VocaRepository extends JpaRepository<Voca,Long> {
             "from Voca v " +
             "WHERE v.userId = :userId GROUP BY v.title")
     List<Object[]> getVocaList(@Param("userId")String userId);
-    List<Voca> findByUserIdAndTitle(@Param("userId") String userId, @Param("title") String title);// 특정 userId와 title을 기준으로 데이터 조회
 
-    @Query("SELECT v.section, v.eng, v.kor, v.bookmark, v.mistakes " +
+    // 유저 단어 데이터 조회
+    List<Voca> findByUserIdAndTitle(@Param("userId") String userId, @Param("title") String title);
+    // 유저 단어 데이터 조회 (특정 섹션)
+    List<Voca> findByUserIdAndTitleAndSection(@Param("userId") String userId, @Param("title") String title, @Param("section") int section);
+
+    //섹션별 단어 리스트
+    @Query("SELECT v " +
             "FROM Voca v " +
             "WHERE v.userId = :userId AND v.title = :title " +
-            "GROUP BY v.section, v.eng, v.kor, v.bookmark, v.mistakes")
-    List<Object[]> findDataGroupBySection(@Param("userId") String userId, @Param("title") String title);
-
+            "ORDER BY v.section ASC, v.bookmark DESC")
+    List<Voca> findVocaOrderBySection(@Param("userId") String userId, @Param("title") String title);
     @Transactional
     @Modifying
     @Query("DELETE FROM Voca v " +
