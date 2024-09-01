@@ -59,7 +59,39 @@ public class LearnServiceImpl implements LearnService{
     }
 
     @Override
+    public Map<String, Object> getQuizEng(String email, String title, int section) {
+        List<Voca> listVoca = vocaRepository.findByUserIdAndTitleAndSection(email,title,section);
+        List<List<String>> result = new ArrayList<>();
+
+        for (Voca voca:
+                listVoca) {
+            List<String> tem = new ArrayList<>();
+            List<Voca> choices = testFindChoices(listVoca,voca);
+            for (Voca v : choices) {
+                tem.add(v.getKor());
+            }
+            tem.add(voca.getKor());
+            Collections.shuffle(tem);
+            tem.add(0,voca.getEng());
+            result.add(tem);
+        }
+        Collections.shuffle(result);
+        return Map.of("data",result);
+    }
+
+    @Override
     public void deleteLearn(String email, String title) {
         vocaRepository.deleteLearn(email,title);
     }
+    private List<Voca> testFindChoices(List<Voca> listVoca, Voca excludedVoca){
+        List<Voca> filteredList = new ArrayList<>(listVoca);// 원본 리스트 복사
+
+        filteredList.remove(excludedVoca);
+        Collections.shuffle(filteredList);
+
+        // 상위 3개 요소를 선택, 반환
+        List<Voca> randomVocaList = filteredList.subList(0, Math.min(3, filteredList.size()));
+        return randomVocaList;
+    }
+
 }
