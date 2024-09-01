@@ -64,6 +64,7 @@ public class LearnServiceImpl implements LearnService{
         }
 
         Map<String, Object> resultData = new LinkedHashMap<>();
+        resultData.put("title",result.get(0).getTitle());
         resultData.put("data", sectionsList);
         return resultData;
     }
