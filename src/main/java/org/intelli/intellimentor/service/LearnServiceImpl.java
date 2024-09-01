@@ -80,6 +80,27 @@ public class LearnServiceImpl implements LearnService{
     }
 
     @Override
+    public Map<String, Object> getQuizKor(String email, String title, int section) {
+        List<Voca> listVoca = vocaRepository.findByUserIdAndTitleAndSection(email,title,section);
+        List<List<String>> result = new ArrayList<>();
+
+        for (Voca voca:
+                listVoca) {
+            List<String> tem = new ArrayList<>();
+            List<Voca> choices = testFindChoices(listVoca,voca);
+            for (Voca v : choices) {
+                tem.add(v.getEng());
+            }
+            tem.add(voca.getEng());
+            Collections.shuffle(tem);
+            tem.add(0,voca.getKor());
+            result.add(tem);
+        }
+        Collections.shuffle(result);
+        return Map.of("data",result);
+    }
+
+    @Override
     public void deleteLearn(String email, String title) {
         vocaRepository.deleteLearn(email,title);
     }

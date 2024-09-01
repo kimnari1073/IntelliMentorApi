@@ -47,6 +47,16 @@ public class LearnController {
         Map<String, Object> result = learnService.getQuizEng(email,title,section);
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
+    @GetMapping("quiz/kor/{title}/{section}")
+    public ResponseEntity<?> getQuizKor(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable("title") String title,
+            @PathVariable("section") int section){
+        String email = JWTUtil.JWTtoEmail(authHeader);
+        Map<String, Object> result = learnService.getQuizKor(email,title,section);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
+
 
     //학습초기화
     @DeleteMapping("/reset/{title}")
