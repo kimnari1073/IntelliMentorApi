@@ -29,32 +29,42 @@ public class LearnServiceImpl implements LearnService{
     @Override
     @Transactional(readOnly = true)
     public Map<String, Object> readLearn(String email, String title) {
-        List<Voca>result = vocaRepository.findVocaOrderBySection(email,title);
-        Map<Integer, List<Map<String, Object>>> sectionMap = new LinkedHashMap<>();
+        List<Voca> result = vocaRepository.findVocaOrderBySection(email,title);
+        List<Map<String, Object>> wordList = new ArrayList<>();
+        List<Map<String, Object>> sectionsList = new ArrayList<>();
 
+        int i=1;
         for (Voca row : result) {
+            if (row.getSection() != i) {
+                // 이전 섹션의 데이터를 sectionsList에 추가
+                Map<String, Object> sections = new LinkedHashMap<>();
+                sections.put("section", i);
+                sections.put("grade", row.getGrade());
+                sections.put("word", new ArrayList<>(wordList));
+                sectionsList.add(sections);
+
+                // 새로운 섹션 시작을 위해 wordList를 초기화
+                wordList.clear();
+                i = row.getSection();
+            }
             Map<String, Object> wordMap = new LinkedHashMap<>();
             wordMap.put("eng", row.getEng());
             wordMap.put("kor", row.getKor());
             wordMap.put("bookmark", row.isBookmark());
             wordMap.put("mistakes", row.getMistakes());
-
-            // 해당 섹션에 단어 추가
-            sectionMap.computeIfAbsent(row.getSection(), k -> new ArrayList<>()).add(wordMap);
+            wordList.add(wordMap);
+        }
+        // 마지막 섹션 추가
+        if (!wordList.isEmpty()) {
+            Map<String, Object> sections = new LinkedHashMap<>();
+            sections.put("section", i);
+            sections.put("grade", result.get(result.size() - 1).getGrade());
+            sections.put("word", wordList);
+            sectionsList.add(sections);
         }
 
-        // JSON 변환을 위한 구조 생성
-        List<Map<String, Object>> sections = new ArrayList<>();
-        for (Map.Entry<Integer, List<Map<String, Object>>> entry : sectionMap.entrySet()) {
-            Map<String, Object> sectionData = new LinkedHashMap<>();
-            sectionData.put("section", entry.getKey());
-            sectionData.put("words", entry.getValue());
-            sections.add(sectionData);
-        }
-
-        // 최종 JSON 데이터 구조
         Map<String, Object> resultData = new LinkedHashMap<>();
-        resultData.put("data", sections);
+        resultData.put("data", sectionsList);
         return resultData;
     }
 

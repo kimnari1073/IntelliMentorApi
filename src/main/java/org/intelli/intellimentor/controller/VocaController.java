@@ -40,7 +40,7 @@ public class VocaController {
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
-    //단어장 조회(상세)
+    //단어장 조회(수정)
     @GetMapping("/read/{title}")
     public ResponseEntity<VocaDTO> readDetailsVoca(
             @RequestHeader("Authorization") String authHeader,

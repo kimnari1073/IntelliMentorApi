@@ -24,5 +24,11 @@ public class Voca {
     private int section;
     private boolean bookmark;
     private int mistakes;
-
+    private String grade;
+    @PrePersist
+    public void prePersist() {
+        if (this.grade == null || this.grade.isEmpty()) {
+            this.grade = "N/A";
+        }
+    }
 }
