@@ -1,30 +1,36 @@
 package org.intelli.intellimentor.repository;
 
 import lombok.extern.log4j.Log4j2;
+import org.intelli.intellimentor.domain.Section;
+import org.intelli.intellimentor.domain.Title;
 import org.intelli.intellimentor.domain.Voca;
-import org.intelli.intellimentor.dto.VocaListDTO;
+import org.intelli.intellimentor.dto.VocaUpdateDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Log4j2
 public class VocaRepositoryTests {
     @Autowired
     private VocaRepository vocaRepository;
+    @Autowired
+    private TitleRepository titleRepository;
+    @Autowired
+    private SectionRepository sectionRepository;
 
     @Test
     public void testInsertVoca(){
         vocaRepository.deleteAll();
+        titleRepository.deleteAll();
+        sectionRepository.deleteAll();
         List<Voca> vocaList1 = new ArrayList<>();
         List<Voca> vocaList2 = new ArrayList<>();
-        int vocaList1Sec=2;
-        int vocaList2Sec=4;
         String[] englishWords1 = {
                 "perseverance", "elaborate", "contemplate", "subtle", "innovative",
                 "benevolent", "resilient", "meticulous", "ephemeral", "lucid"};
@@ -47,15 +53,33 @@ public class VocaRepositoryTests {
                 "통화", "짐", "승선하다", "환승", "비자"};
 
         Random random = new Random();
+        Title title1 = Title.builder().title("토익").build();
+        Title title2 = Title.builder().title("여행관련영어").build();
+        titleRepository.save(title1);
+        titleRepository.save(title2);
+
+        //섹션설정
+        int sectionMax = 3;
+        List<Long> sectionIdList = new ArrayList<>();
+        for(int i =1; i<=sectionMax;i++){
+            Section section = Section.builder().section(i).build();
+            sectionRepository.save(section);
+            sectionIdList.add(section.getId());
+        }
+
         for(int i=0; i<englishWords1.length; i++){
+            Long sectionId = sectionIdList.get(i % sectionMax);
+
+            Section section = sectionRepository.findById(sectionId)
+                    .orElseThrow(() -> new RuntimeException("Section not found"));
             Voca voca = Voca.builder()
                     .eng(englishWords1[i])
                     .kor(meanings1[i])
-                    .title("토익")
+                    .title(title1)
                     .userId("user1@aaa.com")
+                    .section(section)
                     .bookmark(random.nextBoolean())
                     .mistakes(random.nextInt(10)+1)
-                    .section(i%vocaList1Sec+1)
                     .build();
             vocaList1.add(voca);
         }
@@ -63,54 +87,157 @@ public class VocaRepositoryTests {
             Voca voca = Voca.builder()
                     .eng(englishWords2[i])
                     .kor(meanings2[i])
-                    .title("여행관련영어")
+                    .title(title2)
                     .userId("user1@aaa.com")
                     .bookmark(random.nextBoolean())
                     .mistakes(random.nextInt(10)+1)
-                    .section(i%vocaList2Sec+1)
                     .build();
             vocaList2.add(voca);
         }
         vocaRepository.saveAll(vocaList1);
         vocaRepository.saveAll(vocaList2);
+    }
+    @Test
+    public void testGetVocaList(){
+        String email = "user1@aaa.com";
+        List<Object[]> vocaList = vocaRepository.getVocaList(email);
+
+        List<Map<String,Object>> resultList = new ArrayList<>();
+        for(Object[] row : vocaList){
+            Map<String,Object> vocaListMap = new LinkedHashMap<>();
+            vocaListMap.put("title_id",row[0]);
+            vocaListMap.put("title",row[1]);
+            vocaListMap.put("count",row[2]);
+            vocaListMap.put("section",row[3]);
+
+            resultList.add(vocaListMap);
+        }
+        Map<String,Object> result = new LinkedHashMap<>();
+        result.put("data",resultList);
+
+        log.info(result);
+    }
+    @Test
+    public void testGetVocaDetails(){
+        Long titleId = 1L; //토익
+
+        String title = titleRepository.getTitle(titleId);
+        List<Object[]> vocaList = vocaRepository.getVocaListDetails(titleId);
+
+
+        List<Map<String,Object>> wordList = new ArrayList<>();
+        for(Object[] row : vocaList){
+            Map<String,Object> vocaListMap = new LinkedHashMap<>();
+            vocaListMap.put("id",row[0]);
+            vocaListMap.put("eng",row[1]);
+            vocaListMap.put("kor",row[2]);
+
+            wordList.add(vocaListMap);
+        }
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("titleId",titleId);
+        result.put("title",title);
+        result.put("word",wordList);
+
+        log.info(result);
 
     }
-//    @Test
-//    public void testReadVoca(){
-//    }
-//    @Test
-//    public void testUpdateVoca(){
-//        String title="테스트제목1";
-//        String userId="user1@aaa.com";
-//        List<String> updateEng =new ArrayList<>();
-//        List<String> updateKor = new ArrayList<>();
-//        for(int i=0;i<=3;i++){
-//            updateEng.add("engUpdateTest"+i);
-//            updateKor.add("한글업데이트테스트"+i);
-//        }
-//        vocaRepository.deleteByUserIdAndTitle(userId,title);
-//
-//        List<Voca> saveList=new ArrayList<>();
-//        for(int i=0; i<=3; i++){
-//            Voca voca = Voca.builder()
-//                    .eng(updateEng.get(i))
-//                    .kor(updateKor.get(i))
-//                    .title("테스트업데이트제목1")
-//                    .userId("user1@aaa.com")
-//                    .build();
-//            saveList.add(voca);
-//        }
-//        vocaRepository.saveAll(saveList);
-//
-//
-//
-//    }
+    @Test
+    public void testUpdateVoca(){
+        String email = "user1@aaa.com";
 
-//    @Test
-//    public void testDeleteVoca(){
-//        String userId="user1@aaa.com";
-//        String title="테스트업데이트제목1";
-//        vocaRepository.deleteByUserIdAndTitle(userId,title);
-//    }
+        VocaUpdateDTO vocaUpdateDTO = new VocaUpdateDTO();
+        vocaUpdateDTO.setTitleId(1L);
+        vocaUpdateDTO.setModifiedTitle("토익수정");
+        Title title = titleRepository.findById(vocaUpdateDTO.getTitleId())
+                .orElseThrow(() -> new RuntimeException("Title not found"));
+        if(vocaUpdateDTO.getModifiedTitle()!=null){
+            title.setTitle(vocaUpdateDTO.getModifiedTitle());
+            titleRepository.save(title);
+        }
+        //수정할 단어
+        Voca modifiedWord = Voca.builder()
+                .id(1L)
+                .userId(email)
+                .eng("apple")
+                .kor("사과")
+                .build();
+        List<Voca> modifiedWordList = new ArrayList<>();
+        modifiedWordList.add(modifiedWord);
+        vocaUpdateDTO.setModifiedWord(modifiedWordList);
+
+        //단어를 꺼내 title 설정
+//        List<Voca> modifiedWordList = vocaUpdateDTO.getModifiedWord();
+        for (Voca voca : modifiedWordList) {
+            voca.setTitle(title);
+        }
+
+        //삭제할 단어
+        List<Long> deleteId = new ArrayList<>();
+        deleteId.add(3L);
+        vocaUpdateDTO.setDeleteId(deleteId);
+
+        //추가될 단어
+        Voca addWord = Voca.builder()
+                .eng("banana")
+                .kor("바나나")
+                .userId(email)
+                .title(title)
+                .build();
+        List<Voca> addWordList = new ArrayList<>();
+        addWordList.add(addWord);
+        vocaUpdateDTO.setAddWord(addWordList);
+
+        //비어있다면 빈 객체로 초기화
+        List<Voca> modifiedList = vocaUpdateDTO.getModifiedWord() != null ? vocaUpdateDTO.getModifiedWord() : new ArrayList<>();
+
+        List<Long> deleteList = vocaUpdateDTO.getDeleteId();
+        List<Voca> addList = vocaUpdateDTO.getAddWord();
+
+        //변경할 데이터가 있으면 section 초기화
+        if(modifiedList.isEmpty()|| deleteList.isEmpty()|| addList.isEmpty()){
+            List<Long> sectionIdList = vocaRepository.findDistinctSectionIds(vocaUpdateDTO.getTitleId());
+            sectionIdList = sectionIdList.stream()
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+            if (!sectionIdList.isEmpty()) {
+                vocaRepository.resetSection(vocaUpdateDTO.getTitleId());
+                sectionRepository.deleteAllById(sectionIdList);
+            }
+
+
+        }
+
+        if (modifiedList != null && !modifiedList.isEmpty()) {
+            vocaRepository.saveAll(modifiedList);
+        }
+
+        if(deleteList != null && !deleteList.isEmpty()){
+            vocaRepository.deleteAllById(vocaUpdateDTO.getDeleteId());
+        }
+        if(addList !=null && !addList.isEmpty()){
+            vocaRepository.saveAll(vocaUpdateDTO.getAddWord());
+        }
+
+        // 검증
+        Voca updatedVoca = vocaRepository.findById(1L).orElse(null);
+        assertNotNull(updatedVoca);
+        assertEquals("apple", updatedVoca.getEng());
+        assertEquals("사과", updatedVoca.getKor());
+
+        assertFalse(vocaRepository.existsById(2L)); // 삭제된 단어가 존재하지 않음을 확인
+
+        List<Voca> addedVoca = vocaRepository.findByEng("banana");
+        assertEquals(1, addedVoca.size());
+        assertEquals("바나나", addedVoca.get(0).getKor());
+    }
+
+    @Test
+    public void testDeleteVoca(){
+        Long titleId = 2L;
+        titleRepository.deleteById(titleId);
+    }
 
 }

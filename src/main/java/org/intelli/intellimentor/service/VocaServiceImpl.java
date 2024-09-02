@@ -2,17 +2,18 @@ package org.intelli.intellimentor.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.intelli.intellimentor.util.exception.DuplicateDataException;
+import org.intelli.intellimentor.domain.Title;
+import org.intelli.intellimentor.dto.VocaUpdateDTO;
+import org.intelli.intellimentor.repository.SectionRepository;
+import org.intelli.intellimentor.repository.TitleRepository;
 import org.intelli.intellimentor.domain.Voca;
 import org.intelli.intellimentor.dto.VocaDTO;
-import org.intelli.intellimentor.dto.VocaListDTO;
 import org.intelli.intellimentor.repository.VocaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -21,74 +22,131 @@ import java.util.NoSuchElementException;
 public class VocaServiceImpl implements VocaService{
 
     private final VocaRepository vocaRepository;
+    private final TitleRepository titleRepository;
+    private final SectionRepository sectionRepository;
 
     @Override
-    public void createVoca(String email,VocaDTO vocaDTO) {
-        List<Voca> result = vocaRepository.findByUserIdAndTitle(email, vocaDTO.getTitle());
-        if(!result.isEmpty()){
-            throw new DuplicateDataException("단어장 제목이 중복됩니다.");
-        }
-        List<Voca> vocaList = new ArrayList<>();
+    public void createVoca(String email,VocaDTO vocaDTO) {//email,VocaDTO(title,kor,eng)
+        Title title = Title.builder().title(vocaDTO.getTitle()).build();
+        titleRepository.save(title);
 
+        List<Voca> vocaList = new ArrayList<>();
         for (int i = 0; i < vocaDTO.getEng().size(); i++) {
             Voca voca = Voca.builder()
                     .userId(email)
-                    .title(vocaDTO.getTitle())
                     .eng(vocaDTO.getEng().get(i))
                     .kor(vocaDTO.getKor().get(i))
+                    .title(title)
                     .build();
             vocaList.add(voca);
         }
-
         vocaRepository.saveAll(vocaList);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<VocaListDTO> readVoca(String email) {
-        List<Object[]> result = vocaRepository.getVocaList(email);
-        if(result.isEmpty()) return null;
-        return result.stream()
-                .map(r-> new VocaListDTO((String)r[0],(Long)r[1],(int)r[2]))
-                .toList();
+    public Map<String,Object> getVocaList(String email) {
+        List<Object[]> vocaList = vocaRepository.getVocaList(email);
+
+        List<Map<String,Object>> resultList = new ArrayList<>();
+        for(Object[] row : vocaList){
+            Map<String,Object> vocaListMap = new LinkedHashMap<>();
+            vocaListMap.put("title_id",row[0]);
+            vocaListMap.put("title",row[1]);
+            vocaListMap.put("count",row[2]);
+            vocaListMap.put("section",row[3]);
+
+            resultList.add(vocaListMap);
+        }
+        Map<String,Object> result = new LinkedHashMap<>();
+        result.put("data",resultList);
+        return result;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public VocaDTO readDetailsVoca(String email, String title) {
-        List<Voca> result = vocaRepository.findByUserIdAndTitle(email,title);
-        log.info("result: "+result);
-        if (result.isEmpty()) {
-            throw new NoSuchElementException("No Voca found for the given userId and title");
-        }
-        VocaDTO responseDTO = new VocaDTO();
-        responseDTO.setTitle(result.get(0).getTitle());
+    public Map<String, Object> getVocaListDetails(Long titleId) {
+        String title = titleRepository.getTitle(titleId);
+        List<Object[]> vocaList = vocaRepository.getVocaListDetails(titleId);
+        List<Map<String,Object>> wordList = new ArrayList<>();
+        for(Object[] row : vocaList){
+            Map<String,Object> vocaListMap = new LinkedHashMap<>();
+            vocaListMap.put("id",row[0]);
+            vocaListMap.put("eng",row[1]);
+            vocaListMap.put("kor",row[2]);
 
-        List<String> eng = new ArrayList<>();
-        List<String> kor = new ArrayList<>();
-        for (Voca voca : result) {
-            eng.add(voca.getEng());
-            kor.add(voca.getKor());
+            wordList.add(vocaListMap);
         }
 
-        responseDTO.setEng(eng);
-        responseDTO.setKor(kor);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("titleId",titleId);
+        result.put("title",title);
+        result.put("word",wordList);
 
-        return responseDTO;
+        return result;
     }
 
     @Override
-    public void updateVoca(String email, String title,VocaDTO vocaDTO) {
-        deleteVoca(email,title);
-        createVoca(email,vocaDTO);
+    public void updateVoca(String email, VocaUpdateDTO vocaUpdateDTO) {
+        //영속성 컨텍스트로 관리되는 Title 객체
+        Title title = titleRepository.findById(vocaUpdateDTO.getTitleId())
+                .orElseThrow(() -> new RuntimeException("Title not found"));
+
+        List<Voca> modifiedList = vocaUpdateDTO.getModifiedWord() != null ? vocaUpdateDTO.getModifiedWord() : new ArrayList<>();
+        List<Long> deleteList = vocaUpdateDTO.getDeleteId() != null ? vocaUpdateDTO.getDeleteId() : new ArrayList<>();
+        List<Voca> addList = vocaUpdateDTO.getAddWord() != null ? vocaUpdateDTO.getAddWord() : new ArrayList<>();
+
+        //title 수정
+        if(vocaUpdateDTO.getModifiedTitle() != null && !vocaUpdateDTO.getModifiedTitle().equals(title.getTitle())){
+            title.setTitle(vocaUpdateDTO.getModifiedTitle());
+            titleRepository.save(title);
+            log.info("Title Modified...");
+        }
+
+        //수정,삭제,추가 될 단어가 있다면 Section 초기화
+        if (!modifiedList.isEmpty() || !deleteList.isEmpty() || !addList.isEmpty()){
+            List<Long> sectionIdList = vocaRepository.findDistinctSectionIds(vocaUpdateDTO.getTitleId());
+            sectionIdList = sectionIdList.stream()
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+            if (!sectionIdList.isEmpty()) {
+                vocaRepository.resetSection(vocaUpdateDTO.getTitleId());
+                sectionRepository.deleteAllById(sectionIdList);
+            }
+        }
+
+        //수정
+        if (!modifiedList.isEmpty()) {
+            for(Voca voca : modifiedList){
+                voca.setUserId(email);
+                voca.setTitle(title);
+            }
+            vocaRepository.saveAll(modifiedList);
+            log.info("Voca Modified...");
+        }
+
+        //삭제
+        if(!deleteList.isEmpty()){
+            vocaRepository.deleteAllById(deleteList);
+            log.info("Voca Delete...");
+
+        }
+
+        //추가
+        if(!addList.isEmpty()){
+            for(Voca voca: addList){
+                voca.setUserId(email);
+                voca.setTitle(title);
+            }
+            vocaRepository.saveAll(addList);
+            log.info("Voca Add...");
+
+        }
+
     }
 
     @Override
-    public void deleteVoca(String email,String title) {
-        List<Voca> result = vocaRepository.findByUserIdAndTitle(email,title);
-        if(result.isEmpty()){
-            throw new NoSuchElementException();
-        }
-        vocaRepository.deleteVocaList(email,title);
+    public void deleteVoca(Long title) {
+        titleRepository.deleteById(title);
     }
 }

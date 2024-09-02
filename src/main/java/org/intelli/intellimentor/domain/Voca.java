@@ -13,22 +13,28 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Voca {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
     private String userId;
-    private String title;
     private String eng;
     private String kor;
-    private int section;
     private boolean bookmark;
     private int mistakes;
-    private String grade;
+
+    @ManyToOne
+    @JoinColumn(name = "title_id", nullable = false)
+    private Title title;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "section_id")
+    private Section section;
+
     @PrePersist
     public void prePersist() {
-        if (this.grade == null || this.grade.isEmpty()) {
-            this.grade = "N/A";
-        }
+        this.bookmark = false;
+        this.mistakes = 0;
     }
 }
