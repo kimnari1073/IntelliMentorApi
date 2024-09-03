@@ -67,13 +67,13 @@ public class VocaServiceImpl implements VocaService{
     @Transactional(readOnly = true)
     public Map<String, Object> getVocaListDetails(Long titleId) {
         String title = titleRepository.getTitle(titleId);
-        List<Object[]> vocaList = vocaRepository.getVocaListDetails(titleId);
+        List<Voca> vocaList = vocaRepository.getVocaListDetails(titleId);
         List<Map<String,Object>> wordList = new ArrayList<>();
-        for(Object[] row : vocaList){
+        for(Voca row : vocaList){
             Map<String,Object> vocaListMap = new LinkedHashMap<>();
-            vocaListMap.put("id",row[0]);
-            vocaListMap.put("eng",row[1]);
-            vocaListMap.put("kor",row[2]);
+            vocaListMap.put("id",row.getId());
+            vocaListMap.put("eng",row.getEng());
+            vocaListMap.put("kor",row.getKor());
 
             wordList.add(vocaListMap);
         }
@@ -97,22 +97,29 @@ public class VocaServiceImpl implements VocaService{
         List<Voca> addList = vocaUpdateDTO.getAddWord() != null ? vocaUpdateDTO.getAddWord() : new ArrayList<>();
 
         //title 수정
-        if(vocaUpdateDTO.getModifiedTitle() != null && !vocaUpdateDTO.getModifiedTitle().equals(title.getTitle())){
+        if(vocaUpdateDTO.getModifiedTitle() != null &&
+                !vocaUpdateDTO.getModifiedTitle().equals(title.getTitle())){
             title.setTitle(vocaUpdateDTO.getModifiedTitle());
             titleRepository.save(title);
             log.info("Title Modified...");
         }
 
-        //수정,삭제,추가 될 단어가 있다면 Section 초기화
-        if (!modifiedList.isEmpty() || !deleteList.isEmpty() || !addList.isEmpty()){
-            List<Long> sectionIdList = vocaRepository.findDistinctSectionIds(vocaUpdateDTO.getTitleId());
-            sectionIdList = sectionIdList.stream()
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-            if (!sectionIdList.isEmpty()) {
-                vocaRepository.resetSection(vocaUpdateDTO.getTitleId());
-                sectionRepository.deleteAllById(sectionIdList);
+        //Section이 있다면 null로 설정
+        List<Long> sectionList = vocaRepository.getSectionList(title.getId());
+        if ((!modifiedList.isEmpty() || !deleteList.isEmpty() || !addList.isEmpty())
+                &&!sectionList.isEmpty()){
+
+            //List<Voca> 조회 및 Section reset삭제
+            List<Voca> vocaList = vocaRepository.getVocaListDetails(title.getId());
+            for(Voca row:vocaList){
+                row.setSection(null);
             }
+            vocaRepository.saveAll(vocaList);
+            log.info("voca Save.");
+
+            //Section 삭제
+            sectionRepository.deleteAllById(sectionList);
+            log.info("Section Delete..");
         }
 
         //수정
@@ -142,7 +149,6 @@ public class VocaServiceImpl implements VocaService{
             log.info("Voca Add...");
 
         }
-
     }
 
     @Override

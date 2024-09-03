@@ -1,35 +1,73 @@
-//package org.intelli.intellimentor.service;
-//
-//import lombok.extern.log4j.Log4j2;
-//import org.intelli.intellimentor.domain.Voca;
-//import org.intelli.intellimentor.repository.VocaRepository;
-//import org.junit.jupiter.api.Test;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.context.SpringBootTest;
-//
-//import java.util.*;
-//
-//@SpringBootTest
-//@Log4j2
-//public class LearnServiceTests {
-//    @Autowired
-//    private VocaRepository vocaRepository;
-//    @Autowired
-//    private LearnService learnService;
-//
-//    @Test
-//    public void testCreateLearn(){
-//        String email = "user1@aaa.com";
-//        String title="토익";
-//        int requestSection = 3;
-//
-//        List<Voca> vocaList = vocaRepository.findByUserIdAndTitle(email,title);
-//        for (int i = 0; i < vocaList.size(); i++) {
-//            int section = (i % requestSection) + 1;
-//            vocaList.get(i).setSection(section);
-//        }
-//        vocaRepository.saveAll(vocaList);
-//    }
+package org.intelli.intellimentor.service;
+
+import lombok.extern.log4j.Log4j2;
+import org.intelli.intellimentor.domain.Section;
+import org.intelli.intellimentor.domain.Voca;
+import org.intelli.intellimentor.repository.SectionRepository;
+import org.intelli.intellimentor.repository.VocaRepository;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.*;
+
+@SpringBootTest
+@Log4j2
+public class LearnServiceTests {
+
+    @Autowired
+    private SectionRepository sectionRepository;
+    @Autowired
+    private VocaRepository vocaRepository;
+    //섹션 설정
+    @Test
+    public void testSetSection() {
+        Long titleId = 2L;
+        int requestSection = 4;
+        //섹션 생성
+        List<Section> saveSectionList = new ArrayList<>();
+        for(int i=1;i<=requestSection;i++){
+            Section section = Section.builder()
+                    .section(i)
+                    .build();
+            saveSectionList.add(section);
+        }
+        sectionRepository.saveAll(saveSectionList);
+        log.info("Section save.");
+
+        //Voca섹션설정
+        List<Voca> vocaList = vocaRepository.getVocaListDetails(titleId);
+        int i =0;
+        for(Voca row:vocaList){
+            row.setSection(saveSectionList.get(i%requestSection));
+            i++;
+        }
+        vocaRepository.saveAll(vocaList);
+        log.info("Voca save..");
+    }
+
+    //섹션 초기화
+    @Test
+    public void testResetSection(){
+        Long titleId = 2L;
+
+        //Section 조회
+        List<Long> sectionList = vocaRepository.getSectionList(titleId);
+
+        //List<Voca> 조회 및 Section reset삭제
+        List<Voca> vocaList = vocaRepository.getVocaListDetails(titleId);
+        for(Voca row:vocaList){
+            row.setSection(null);
+        }
+        vocaRepository.saveAll(vocaList);
+        log.info("voca Save.");
+
+        //Section 삭제
+        sectionRepository.deleteAllById(sectionList);
+        log.info("Section Delete..");
+
+
+    }
 //
 //    //section:1
 //    //word:{key:value},{key:value}...
@@ -82,4 +120,4 @@
 //    public void testCreateQuiz(){
 //
 //    }
-//}
+}

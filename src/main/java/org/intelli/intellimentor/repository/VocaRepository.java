@@ -1,6 +1,7 @@
 package org.intelli.intellimentor.repository;
 
 import jakarta.transaction.Transactional;
+import org.intelli.intellimentor.domain.Section;
 import org.intelli.intellimentor.domain.Voca;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -10,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface VocaRepository extends JpaRepository<Voca,Long> {
+    //유저 단어 리스트 조회
     @Query("SELECT v.title.id,v.title.title,COUNT(v), COALESCE(MAX(s.section), 0) " +
             "FROM Voca v " +
             "JOIN v.title t " +
@@ -20,24 +22,16 @@ public interface VocaRepository extends JpaRepository<Voca,Long> {
     List<Object[]> getVocaList(@Param("userId")String userId);
 
     //유저 단어 데이터 조회
-    @Query("SELECT v.id,v.eng,v.kor " +
-            "FROM Voca v " +
+    @Query("SELECT v FROM Voca v " +
             "WHERE v.title.id = :titleId " +
-            "GROUP BY v.id,v.eng,v.kor " +
             "ORDER BY v.id")
-    List<Object[]> getVocaListDetails(@Param("titleId") Long titleId);
-
-    List<Voca> findByEng(String eng);//test
+    List<Voca> getVocaListDetails(@Param("titleId") Long titleId);
 
     //section 조회
-    @Query("SELECT DISTINCT v.section.id FROM Voca v WHERE v.title.id=:titleId")
-    List<Long> findDistinctSectionIds(@Param("titleId")Long titleId);
-
-    //section 초기화
-    @Transactional
-    @Modifying
-    @Query("UPDATE Voca v SET v.section = NULL WHERE v.title.id=:titleId")
-    void resetSection(@Param("titleId")Long titleId);
+    @Query("SELECT DISTINCT v.section.id " +
+            "FROM Voca v " +
+            "WHERE v.title.id=:titleId")
+    List<Long> getSectionList(@Param("titleId")Long titleId);
 
     // 유저 단어 데이터 조회 (특정 섹션)
 //    List<Voca> findByUserIdAndTitleAndSection(@Param("userId") String userId, @Param("title") String title, @Param("section") int section);

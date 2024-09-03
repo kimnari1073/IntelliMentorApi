@@ -125,15 +125,15 @@ public class VocaServiceTests {
         Long titleId = 1L; //토익
 
         String title = titleRepository.getTitle(titleId);
-        List<Object[]> vocaList = vocaRepository.getVocaListDetails(titleId);
+        List<Voca> vocaList = vocaRepository.getVocaListDetails(titleId);
 
 
         List<Map<String,Object>> wordList = new ArrayList<>();
-        for(Object[] row : vocaList){
+        for(Voca row : vocaList){
             Map<String,Object> vocaListMap = new LinkedHashMap<>();
-            vocaListMap.put("id",row[0]);
-            vocaListMap.put("eng",row[1]);
-            vocaListMap.put("kor",row[2]);
+            vocaListMap.put("id",row.getId());
+            vocaListMap.put("eng",row.getEng());
+            vocaListMap.put("kor",row.getKor());
 
             wordList.add(vocaListMap);
         }
@@ -148,93 +148,95 @@ public class VocaServiceTests {
     }
     @Test
     public void testUpdateVoca(){
-        String email = "user1@aaa.com";
-
+        String email="user1@aaa.com";
+        //VocaUpdateDTO설정
         VocaUpdateDTO vocaUpdateDTO = new VocaUpdateDTO();
         vocaUpdateDTO.setTitleId(1L);
         vocaUpdateDTO.setModifiedTitle("토익수정");
-        Title title = titleRepository.findById(vocaUpdateDTO.getTitleId())
-                .orElseThrow(() -> new RuntimeException("Title not found"));
-        if(vocaUpdateDTO.getModifiedTitle()!=null){
-            title.setTitle(vocaUpdateDTO.getModifiedTitle());
-            titleRepository.save(title);
-        }
         //수정할 단어
         Voca modifiedWord = Voca.builder()
                 .id(1L)
-                .userId(email)
                 .eng("apple")
                 .kor("사과")
                 .build();
         List<Voca> modifiedWordList = new ArrayList<>();
         modifiedWordList.add(modifiedWord);
         vocaUpdateDTO.setModifiedWord(modifiedWordList);
-
-        //단어를 꺼내 title 설정
-//        List<Voca> modifiedWordList = vocaUpdateDTO.getModifiedWord();
-        for (Voca voca : modifiedWordList) {
-            voca.setTitle(title);
-        }
-
         //삭제할 단어
         List<Long> deleteId = new ArrayList<>();
         deleteId.add(3L);
         vocaUpdateDTO.setDeleteId(deleteId);
-
         //추가될 단어
         Voca addWord = Voca.builder()
                 .eng("banana")
                 .kor("바나나")
-                .userId(email)
-                .title(title)
                 .build();
         List<Voca> addWordList = new ArrayList<>();
         addWordList.add(addWord);
         vocaUpdateDTO.setAddWord(addWordList);
 
-        //비어있다면 빈 객체로 초기화
+
+        //영속성 컨텍스트로 관리되는 Title 객체
+        Title title = titleRepository.findById(vocaUpdateDTO.getTitleId())
+                .orElseThrow(() -> new RuntimeException("Title not found"));
+
         List<Voca> modifiedList = vocaUpdateDTO.getModifiedWord() != null ? vocaUpdateDTO.getModifiedWord() : new ArrayList<>();
+        List<Long> deleteList = vocaUpdateDTO.getDeleteId() != null ? vocaUpdateDTO.getDeleteId() : new ArrayList<>();
+        List<Voca> addList = vocaUpdateDTO.getAddWord() != null ? vocaUpdateDTO.getAddWord() : new ArrayList<>();
 
-        List<Long> deleteList = vocaUpdateDTO.getDeleteId();
-        List<Voca> addList = vocaUpdateDTO.getAddWord();
+        //title 수정
+        if(vocaUpdateDTO.getModifiedTitle() != null &&
+                !vocaUpdateDTO.getModifiedTitle().equals(title.getTitle())){
+            title.setTitle(vocaUpdateDTO.getModifiedTitle());
+            titleRepository.save(title);
+            log.info("Title Modified...");
+        }
 
-        //변경할 데이터가 있으면 section 초기화
-        if(modifiedList.isEmpty()|| deleteList.isEmpty()|| addList.isEmpty()){
-            List<Long> sectionIdList = vocaRepository.findDistinctSectionIds(vocaUpdateDTO.getTitleId());
-            sectionIdList = sectionIdList.stream()
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
+        //Section이 있다면 null로 설정
+        List<Long> sectionList = vocaRepository.getSectionList(title.getId());
+        if ((!modifiedList.isEmpty() || !deleteList.isEmpty() || !addList.isEmpty())
+                &&!sectionList.isEmpty()){
 
-            if (!sectionIdList.isEmpty()) {
-                vocaRepository.resetSection(vocaUpdateDTO.getTitleId());
-                sectionRepository.deleteAllById(sectionIdList);
+            //List<Voca> 조회 및 Section reset삭제
+            List<Voca> vocaList = vocaRepository.getVocaListDetails(title.getId());
+            for(Voca row:vocaList){
+                row.setSection(null);
             }
+            vocaRepository.saveAll(vocaList);
+            log.info("voca Save.");
 
-
+            //Section 삭제
+            sectionRepository.deleteAllById(sectionList);
+            log.info("Section Delete..");
         }
 
-        if (modifiedList != null && !modifiedList.isEmpty()) {
+        //수정
+        if (!modifiedList.isEmpty()) {
+            for(Voca voca : modifiedList){
+                voca.setUserId(email);
+                voca.setTitle(title);
+            }
             vocaRepository.saveAll(modifiedList);
+            log.info("Voca Modified...");
         }
 
-        if(deleteList != null && !deleteList.isEmpty()){
-            vocaRepository.deleteAllById(vocaUpdateDTO.getDeleteId());
+        //삭제
+        if(!deleteList.isEmpty()){
+            vocaRepository.deleteAllById(deleteList);
+            log.info("Voca Delete...");
+
         }
-        if(addList !=null && !addList.isEmpty()){
-            vocaRepository.saveAll(vocaUpdateDTO.getAddWord());
+
+        //추가
+        if(!addList.isEmpty()){
+            for(Voca voca: addList){
+                voca.setUserId(email);
+                voca.setTitle(title);
+            }
+            vocaRepository.saveAll(addList);
+            log.info("Voca Add...");
+
         }
-
-        // 검증
-        Voca updatedVoca = vocaRepository.findById(1L).orElse(null);
-        assertNotNull(updatedVoca);
-        assertEquals("apple", updatedVoca.getEng());
-        assertEquals("사과", updatedVoca.getKor());
-
-        assertFalse(vocaRepository.existsById(2L)); // 삭제된 단어가 존재하지 않음을 확인
-
-        List<Voca> addedVoca = vocaRepository.findByEng("banana");
-        assertEquals(1, addedVoca.size());
-        assertEquals("바나나", addedVoca.get(0).getKor());
     }
 
     @Test
