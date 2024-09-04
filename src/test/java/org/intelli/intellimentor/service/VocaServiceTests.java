@@ -149,9 +149,9 @@ public class VocaServiceTests {
     @Test
     public void testUpdateVoca(){
         String email="user1@aaa.com";
+        Long titleId = 1L;
         //VocaUpdateDTO설정
         VocaUpdateDTO vocaUpdateDTO = new VocaUpdateDTO();
-        vocaUpdateDTO.setTitleId(1L);
         vocaUpdateDTO.setModifiedTitle("토익수정");
         //수정할 단어
         Voca modifiedWord = Voca.builder()
@@ -177,7 +177,7 @@ public class VocaServiceTests {
 
 
         //영속성 컨텍스트로 관리되는 Title 객체
-        Title title = titleRepository.findById(vocaUpdateDTO.getTitleId())
+        Title title = titleRepository.findById(titleId)
                 .orElseThrow(() -> new RuntimeException("Title not found"));
 
         List<Voca> modifiedList = vocaUpdateDTO.getModifiedWord() != null ? vocaUpdateDTO.getModifiedWord() : new ArrayList<>();

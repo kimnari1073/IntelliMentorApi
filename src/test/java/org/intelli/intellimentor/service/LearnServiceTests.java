@@ -22,8 +22,8 @@ public class LearnServiceTests {
     //섹션 설정
     @Test
     public void testSetSection() {
-        Long titleId = 2L;
-        int requestSection = 4;
+        Long titleId = 1L;
+        int requestSection = 3;
         //섹션 생성
         List<Section> saveSectionList = new ArrayList<>();
         for(int i=1;i<=requestSection;i++){
@@ -68,43 +68,43 @@ public class LearnServiceTests {
 
 
     }
-//
-//    //section:1
-//    //word:{key:value},{key:value}...
-//    //section:2
-//    //word:{key:value}...
-//    @Test
-//    public void testReadLearn(){
-//        String email="user1@aaa.com";
-//        String title="토익";
-//        List<Voca>result = vocaRepository.findVocaOrderBySection(email,title);
-//        Map<Integer, List<Map<String, Object>>> sectionMap = new LinkedHashMap<>();
-//
-//        for (Voca row : result) {
-//            Map<String, Object> wordMap = new LinkedHashMap<>();
-//            wordMap.put("eng", row.getEng());
-//            wordMap.put("kor", row.getKor());
-//            wordMap.put("bookmark", row.isBookmark());
-//            wordMap.put("mistakes", row.getMistakes());
-//
-//            // 해당 섹션에 단어 추가
-//            sectionMap.computeIfAbsent(row.getSection(), k -> new ArrayList<>()).add(wordMap);
-//        }
-//
-//        // JSON 변환을 위한 구조 생성
-//        List<Map<String, Object>> sections = new ArrayList<>();
-//        for (Map.Entry<Integer, List<Map<String, Object>>> entry : sectionMap.entrySet()) {
-//            Map<String, Object> sectionData = new LinkedHashMap<>();
-//            sectionData.put("section", entry.getKey());
-//            sectionData.put("words", entry.getValue());
-//            sections.add(sectionData);
-//        }
-//
-//        // 최종 JSON 데이터 구조
-//        Map<String, Object> resultData = new LinkedHashMap<>();
-//        resultData.put("data", sections);
-//        log.info(resultData);
-//    }
+
+    //학습 조회
+    @Test
+    public void testGetLearn(){
+        String email="user1@aaa.com";
+        Long titleId=1L;
+
+        List<Voca> vocaList = vocaRepository.getVocaListDetails(titleId);
+        Map<Integer, List<Map<String, Object>>> sectionMap = new LinkedHashMap<>();
+
+        for (Voca row : vocaList) {
+            Map<String, Object> wordMap = new LinkedHashMap<>();
+            wordMap.put("eng", row.getEng());
+            wordMap.put("kor", row.getKor());
+            wordMap.put("bookmark", row.isBookmark());
+            wordMap.put("mistakes", row.getMistakes());
+
+            // 해당 섹션에 단어 추가
+            sectionMap.computeIfAbsent(row.getSection().getSection(), k -> new ArrayList<>()).add(wordMap);
+        }
+
+        // JSON 변환을 위한 구조 생성
+        List<Map<String, Object>> sections = new ArrayList<>();
+        for (Map.Entry<Integer, List<Map<String, Object>>> entry : sectionMap.entrySet()) {
+            Map<String, Object> sectionData = new LinkedHashMap<>();
+            sectionData.put("section", entry.getKey());
+            sectionData.put("words", entry.getValue());
+            sections.add(sectionData);
+        }
+
+        // 최종 JSON 데이터 구조
+        Map<String, Object> resultData = new LinkedHashMap<>();
+        resultData.put("titleId",titleId);
+        resultData.put("title",vocaList.get(0).getTitle().getTitle());
+        resultData.put("data", sections);
+        log.info(resultData);
+    }
 //
 //    @Test
 //    public void testUpdateLearn(){

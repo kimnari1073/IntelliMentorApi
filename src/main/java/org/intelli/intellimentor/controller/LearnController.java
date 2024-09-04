@@ -34,7 +34,7 @@ public class LearnController {
     public ResponseEntity<?> deleteLearn(
             @PathVariable("titleId") Long titleId){
         learnService.deleteLearn(titleId);
-        
+
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 

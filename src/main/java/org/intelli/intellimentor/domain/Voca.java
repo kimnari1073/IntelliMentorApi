@@ -28,7 +28,7 @@ public class Voca {
     @JoinColumn(name = "title_id", nullable = false)
     private Title title;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "section_id")
     private Section section;
 
