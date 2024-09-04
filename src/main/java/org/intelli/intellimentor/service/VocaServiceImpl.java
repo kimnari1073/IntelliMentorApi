@@ -87,9 +87,9 @@ public class VocaServiceImpl implements VocaService{
     }
 
     @Override
-    public void updateVoca(String email, VocaUpdateDTO vocaUpdateDTO) {
+    public void updateVoca(String email,Long titleId, VocaUpdateDTO vocaUpdateDTO) {
         //영속성 컨텍스트로 관리되는 Title 객체
-        Title title = titleRepository.findById(vocaUpdateDTO.getTitleId())
+        Title title = titleRepository.findById(titleId)
                 .orElseThrow(() -> new RuntimeException("Title not found"));
 
         List<Voca> modifiedList = vocaUpdateDTO.getModifiedWord() != null ? vocaUpdateDTO.getModifiedWord() : new ArrayList<>();

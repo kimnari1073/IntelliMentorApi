@@ -52,13 +52,14 @@ public class VocaController {
     }
 
     //단어장 수정
-    @PatchMapping("/update")
+    @PatchMapping("/update/{titleId}")
     public ResponseEntity<String> updateVoca(
             @RequestHeader("Authorization") String authHeader,
+            @PathVariable("titleId")Long titleId,
             @RequestBody VocaUpdateDTO vocaUpdateDTO){
         String email = JWTUtil.JWTtoEmail(authHeader);
 
-        vocaService.updateVoca(email,vocaUpdateDTO);
+        vocaService.updateVoca(email,titleId,vocaUpdateDTO);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

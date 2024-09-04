@@ -9,6 +9,6 @@ public interface VocaService {
     void createVoca(String email,VocaDTO vocaDTO);
     Map<String,Object> getVocaList(String email);
     Map<String,Object> getVocaListDetails(Long titleId);
-    void updateVoca(String email, VocaUpdateDTO vocaUpdateDTO);
+    void updateVoca(String email, Long titleId, VocaUpdateDTO vocaUpdateDTO);
     void deleteVoca(Long title);
 }
