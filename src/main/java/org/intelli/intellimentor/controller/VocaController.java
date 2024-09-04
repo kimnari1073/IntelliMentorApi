@@ -52,7 +52,7 @@ public class VocaController {
     }
 
     //단어장 수정
-    @PutMapping("/update")
+    @PatchMapping("/update")
     public ResponseEntity<String> updateVoca(
             @RequestHeader("Authorization") String authHeader,
             @RequestBody VocaUpdateDTO vocaUpdateDTO){

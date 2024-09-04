@@ -51,7 +51,7 @@ public class VocaServiceImpl implements VocaService{
         List<Map<String,Object>> resultList = new ArrayList<>();
         for(Object[] row : vocaList){
             Map<String,Object> vocaListMap = new LinkedHashMap<>();
-            vocaListMap.put("title_id",row[0]);
+            vocaListMap.put("titleId",row[0]);
             vocaListMap.put("title",row[1]);
             vocaListMap.put("count",row[2]);
             vocaListMap.put("section",row[3]);
