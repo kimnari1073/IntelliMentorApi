@@ -92,9 +92,9 @@ public class VocaServiceImpl implements VocaService{
         Title title = titleRepository.findById(titleId)
                 .orElseThrow(() -> new RuntimeException("Title not found"));
 
-        List<Voca> modifiedList = vocaUpdateDTO.getModifiedWord() != null ? vocaUpdateDTO.getModifiedWord() : new ArrayList<>();
-        List<Long> deleteList = vocaUpdateDTO.getDeleteId() != null ? vocaUpdateDTO.getDeleteId() : new ArrayList<>();
-        List<Voca> addList = vocaUpdateDTO.getAddWord() != null ? vocaUpdateDTO.getAddWord() : new ArrayList<>();
+        List<Voca> modifiedList = vocaUpdateDTO.getModifiedWord();
+        List<Long> deleteList = vocaUpdateDTO.getDeleteId();
+        List<Voca> addList = vocaUpdateDTO.getAddWord();
 
         //title 수정
         if(vocaUpdateDTO.getModifiedTitle() != null &&
@@ -106,8 +106,12 @@ public class VocaServiceImpl implements VocaService{
 
         //Section이 있다면 null로 설정
         List<Long> sectionList = vocaRepository.getSectionList(title.getId());
+        log.info("sectionList: "+sectionList);
+        log.info("modifiedList: "+modifiedList);
+        log.info("deleteList: "+deleteList);
+        log.info("addList: "+addList);
         if ((!modifiedList.isEmpty() || !deleteList.isEmpty() || !addList.isEmpty())
-                &&!sectionList.isEmpty()){
+                &&!sectionList.contains(null)){
 
             //List<Voca> 조회 및 Section reset삭제
             List<Voca> vocaList = vocaRepository.getVocaListDetails(title.getId());
