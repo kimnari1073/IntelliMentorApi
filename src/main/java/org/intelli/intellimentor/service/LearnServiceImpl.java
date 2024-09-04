@@ -1,31 +1,46 @@
-//package org.intelli.intellimentor.service;
-//
-//import lombok.RequiredArgsConstructor;
-//import lombok.extern.log4j.Log4j2;
-//import org.intelli.intellimentor.domain.Voca;
-//import org.intelli.intellimentor.repository.VocaRepository;
-//import org.springframework.stereotype.Service;
-//import org.springframework.transaction.annotation.Transactional;
-//
-//import java.util.*;
-//
-//@Service
-//@Transactional
-//@RequiredArgsConstructor
-//@Log4j2
-//public class LearnServiceImpl implements LearnService{
-//    private final VocaRepository vocaRepository;
-//    @Override
-//    public void createSection(String email, String title, int section) {
-//        List<Voca> vocaList = vocaRepository.findByUserIdAndTitle(email,title);
-//        //섹션 설정
-//        for (int i = 0; i < vocaList.size(); i++) {
-//            int sec = (i % section) + 1;
-//            vocaList.get(i).setSection(sec);
-//        }
-//        vocaRepository.saveAll(vocaList);
-//    }
-//
+package org.intelli.intellimentor.service;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.intelli.intellimentor.domain.Section;
+import org.intelli.intellimentor.domain.Voca;
+import org.intelli.intellimentor.repository.SectionRepository;
+import org.intelli.intellimentor.repository.VocaRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+
+@Service
+@Transactional
+@RequiredArgsConstructor
+@Log4j2
+public class LearnServiceImpl implements LearnService{
+    private final VocaRepository vocaRepository;
+    private final SectionRepository sectionRepository;
+    @Override
+    public void setSection(Long titleId, int requestSection) {
+        //섹션 생성
+        List<Section> saveSectionList = new ArrayList<>();
+        for(int i=1;i<=requestSection;i++){
+            Section section = Section.builder()
+                    .section(i)
+                    .build();
+            saveSectionList.add(section);
+        }
+        sectionRepository.saveAll(saveSectionList);
+        log.info("Section save.");
+
+        //Voca섹션설정
+        List<Voca> vocaList = vocaRepository.getVocaListDetails(titleId);
+        int i =0;
+        for(Voca row:vocaList){
+            row.setSection(saveSectionList.get(i%requestSection));
+            i++;
+        }
+        vocaRepository.saveAll(vocaList);
+    }
+
 //    @Override
 //    @Transactional(readOnly = true)
 //    public Map<String, Object> readLearn(String email, String title) {
@@ -125,5 +140,5 @@
 //        List<Voca> randomVocaList = filteredList.subList(0, Math.min(3, filteredList.size()));
 //        return randomVocaList;
 //    }
-//
-//}
+
+}

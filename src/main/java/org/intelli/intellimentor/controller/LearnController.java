@@ -1,34 +1,35 @@
-//package org.intelli.intellimentor.controller;
-//
-//import jakarta.servlet.http.HttpSession;
-//import lombok.RequiredArgsConstructor;
-//import lombok.extern.log4j.Log4j2;
-//import org.intelli.intellimentor.dto.LearnRequestDTO;
-//import org.intelli.intellimentor.service.LearnService;
-//import org.intelli.intellimentor.util.JWTUtil;
-//import org.springframework.http.HttpStatus;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.web.bind.annotation.*;
-//
-//import java.util.Map;
-//
-//
-//@RestController
-//@Log4j2
-//@RequiredArgsConstructor
-//@RequestMapping("/api/learn")
-//public class LearnController {
-//    private final LearnService learnService;
-//
-//    @PatchMapping("/create")
-//    public ResponseEntity<?> createSection(
-//            @RequestHeader("Authorization")String authHeader,
-//            @RequestBody LearnRequestDTO learnRequestDTO){
-//        String email = JWTUtil.JWTtoEmail(authHeader);
-//        learnService.createSection(email,learnRequestDTO.getTitle(),learnRequestDTO.getSection());
-//        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-//    }
-//
+package org.intelli.intellimentor.controller;
+
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.intelli.intellimentor.dto.LearnRequestDTO;
+import org.intelli.intellimentor.service.LearnService;
+import org.intelli.intellimentor.util.JWTUtil;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
+
+@RestController
+@Log4j2
+@RequiredArgsConstructor
+@RequestMapping("/api/learn")
+public class LearnController {
+    private final LearnService learnService;
+
+    @PatchMapping("/set/{titleId}")
+    public ResponseEntity<?> setSection(
+            @PathVariable("titleId")Long titleId,
+            @RequestBody Map<String, Integer> body
+    ){
+        learnService.setSection(titleId,body.get("section"));
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
 //    @GetMapping("/read/{title}")
 //    public ResponseEntity<?> readLearn(
 //            @RequestHeader("Authorization") String authHeader,
@@ -67,4 +68,4 @@
 //        learnService.deleteLearn(email,title);
 //        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 //    }
-//}
+}
