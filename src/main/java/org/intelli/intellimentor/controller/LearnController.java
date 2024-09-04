@@ -29,6 +29,14 @@ public class LearnController {
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+    //학습초기화
+    @DeleteMapping("/reset/{titleId}")
+    public ResponseEntity<?> deleteLearn(
+            @PathVariable("titleId") Long titleId){
+        learnService.deleteLearn(titleId);
+        
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 
 //    @GetMapping("/read/{title}")
 //    public ResponseEntity<?> readLearn(
@@ -59,13 +67,5 @@ public class LearnController {
 //    }
 //
 //
-//    //학습초기화
-//    @DeleteMapping("/reset/{title}")
-//    public ResponseEntity<?> deleteLearn(
-//            @RequestHeader("Authorization") String authHeader,
-//            @PathVariable("title") String title){
-//        String email = JWTUtil.JWTtoEmail(authHeader);
-//        learnService.deleteLearn(email,title);
-//        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-//    }
+
 }

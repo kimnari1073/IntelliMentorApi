@@ -40,7 +40,23 @@ public class LearnServiceImpl implements LearnService{
         }
         vocaRepository.saveAll(vocaList);
     }
+    @Override
+    public void deleteLearn(Long titleId) {
+        //Section 조회
+        List<Long> sectionList = vocaRepository.getSectionList(titleId);
 
+        //List<Voca> 조회 및 Section reset삭제
+        List<Voca> vocaList = vocaRepository.getVocaListDetails(titleId);
+        for(Voca row:vocaList){
+            row.setSection(null);
+        }
+        vocaRepository.saveAll(vocaList);
+        log.info("voca Save.");
+
+        //Section 삭제
+        sectionRepository.deleteAllById(sectionList);
+        log.info("Section Delete..");
+    }
 //    @Override
 //    @Transactional(readOnly = true)
 //    public Map<String, Object> readLearn(String email, String title) {
@@ -126,10 +142,7 @@ public class LearnServiceImpl implements LearnService{
 //        return Map.of("data",result);
 //    }
 //
-//    @Override
-//    public void deleteLearn(String email, String title) {
-//        vocaRepository.deleteLearn(email,title);
-//    }
+//
 //    private List<Voca> testFindChoices(List<Voca> listVoca, Voca excludedVoca){
 //        List<Voca> filteredList = new ArrayList<>(listVoca);// 원본 리스트 복사
 //
