@@ -17,7 +17,7 @@ public interface VocaRepository extends JpaRepository<Voca,Long> {
             "JOIN v.title t " +
             "LEFT JOIN v.section s " +
             "WHERE v.userId = :userId " +
-            "GROUP BY t.title " +
+            "GROUP BY v.title.id,v.title.title,COUNT(v) " +
             "ORDER BY v.title.id")
     List<Object[]> getVocaList(@Param("userId")String userId);
 
