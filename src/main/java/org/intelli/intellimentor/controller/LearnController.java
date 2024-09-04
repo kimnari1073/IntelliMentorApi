@@ -38,14 +38,11 @@ public class LearnController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-//    @GetMapping("/read/{title}")
-//    public ResponseEntity<?> readLearn(
-//            @RequestHeader("Authorization") String authHeader,
-//            @PathVariable("title") String title){
-//        String email = JWTUtil.JWTtoEmail(authHeader);
-//        Map<String, Object> result = learnService.readLearn(email,title);
-//        return ResponseEntity.status(HttpStatus.OK).body(result);
-//    }
+    @GetMapping("/read/{titleId}")
+    public ResponseEntity<?> getLearn(@PathVariable("titleId") Long titleId){
+        Map<String, Object> result = learnService.getLearn(titleId);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
 //
 //    @GetMapping("/quiz/eng/{title}/{section}")
 //    public ResponseEntity<?> getQuizEng(

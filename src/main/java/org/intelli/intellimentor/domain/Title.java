@@ -9,7 +9,7 @@ import java.util.List;
 @Table
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "vocas")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,6 +19,6 @@ public class Title {
     private Long id;
     private String title;
 
-    @OneToMany(mappedBy = "title", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "title", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
     private List<Voca> vocas;
 }

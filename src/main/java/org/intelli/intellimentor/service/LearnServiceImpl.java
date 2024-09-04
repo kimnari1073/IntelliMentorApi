@@ -57,48 +57,50 @@ public class LearnServiceImpl implements LearnService{
         sectionRepository.deleteAllById(sectionList);
         log.info("Section Delete..");
     }
-//    @Override
-//    @Transactional(readOnly = true)
-//    public Map<String, Object> readLearn(String email, String title) {
-//        List<Voca> result = vocaRepository.findVocaOrderBySection(email,title);
-//        List<Map<String, Object>> wordList = new ArrayList<>();
-//        List<Map<String, Object>> sectionsList = new ArrayList<>();
-//
-//        int i=1;
-//        for (Voca row : result) {
-//            if (row.getSection() != i) {
-//                // 이전 섹션의 데이터를 sectionsList에 추가
-//                Map<String, Object> sections = new LinkedHashMap<>();
-//                sections.put("section", i);
-//                sections.put("grade", row.getGrade());
-//                sections.put("word", new ArrayList<>(wordList));
-//                sectionsList.add(sections);
-//
-//                // 새로운 섹션 시작을 위해 wordList를 초기화
-//                wordList.clear();
-//                i = row.getSection();
-//            }
-//            Map<String, Object> wordMap = new LinkedHashMap<>();
-//            wordMap.put("eng", row.getEng());
-//            wordMap.put("kor", row.getKor());
-//            wordMap.put("bookmark", row.isBookmark());
-//            wordMap.put("mistakes", row.getMistakes());
-//            wordList.add(wordMap);
-//        }
-//        // 마지막 섹션 추가
-//        if (!wordList.isEmpty()) {
-//            Map<String, Object> sections = new LinkedHashMap<>();
-//            sections.put("section", i);
-//            sections.put("grade", result.get(result.size() - 1).getGrade());
-//            sections.put("word", wordList);
-//            sectionsList.add(sections);
-//        }
-//
-//        Map<String, Object> resultData = new LinkedHashMap<>();
-//        resultData.put("title",result.get(0).getTitle());
-//        resultData.put("data", sectionsList);
-//        return resultData;
-//    }
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, Object> getLearn(Long titleId) {
+        List<Voca> vocaList = vocaRepository.getVocaListDetails(titleId);
+        vocaList.sort(Comparator.comparing(voca -> voca.getSection().getSection()));
+        List<Map<String, Object>> wordList = new ArrayList<>();
+        List<Map<String, Object>> sectionsList = new ArrayList<>();
+
+        int i=1;
+        for (Voca row : vocaList) {
+            if (row.getSection().getSection() != i) {
+                // 이전 섹션의 데이터를 sectionsList에 추가
+                Map<String, Object> sections = new LinkedHashMap<>();
+                sections.put("section", i);
+                sections.put("grade", row.getSection().getGrade());
+                sections.put("word", wordList);
+                sectionsList.add(sections);
+                log.info("sectionsList: "+sectionsList);
+                // 새로운 섹션 시작을 위해 wordList를 초기화
+                wordList = new ArrayList<>();
+                i++;
+            }
+            Map<String, Object> wordMap = new LinkedHashMap<>();
+            wordMap.put("eng", row.getEng());
+            wordMap.put("kor", row.getKor());
+            wordMap.put("bookmark", row.isBookmark());
+            wordMap.put("mistakes", row.getMistakes());
+            wordList.add(wordMap);
+//            log.info("wordList: "+wordList);
+        }
+        // 마지막 섹션 추가
+        if (!wordList.isEmpty()) {
+            Map<String, Object> sections = new LinkedHashMap<>();
+            sections.put("section", i);
+            sections.put("grade", vocaList.get(vocaList.size() - 1).getSection().getGrade());
+            sections.put("word", wordList);
+            sectionsList.add(sections);
+        }
+        Map<String, Object> resultData = new LinkedHashMap<>();
+        resultData.put("titleId",vocaList.get(0).getTitle().getId());
+        resultData.put("title",vocaList.get(0).getTitle().getTitle());
+        resultData.put("data", sectionsList);
+        return resultData;
+    }
 //
 //    @Override
 //    public Map<String, Object> getQuizEng(String email, String title, int section) {
