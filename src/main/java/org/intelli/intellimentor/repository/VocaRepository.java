@@ -12,12 +12,12 @@ import java.util.List;
 
 public interface VocaRepository extends JpaRepository<Voca,Long> {
     //유저 단어 리스트 조회
-    @Query("SELECT v.title.id,v.title.title,COUNT(v), COALESCE(MAX(s.section), 0) " +
+    @Query("SELECT v.title.id, v.title.title, COUNT(v), COALESCE(MAX(s.section), 0) " +
             "FROM Voca v " +
             "JOIN v.title t " +
             "LEFT JOIN v.section s " +
             "WHERE v.userId = :userId " +
-            "GROUP BY v.title.id,v.title.title,COUNT(v) " +
+            "GROUP BY v.title.id, v.title.title " +
             "ORDER BY v.title.id")
     List<Object[]> getVocaList(@Param("userId")String userId);
 
