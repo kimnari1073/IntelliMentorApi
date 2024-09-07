@@ -87,6 +87,7 @@ public class LearnServiceImpl implements LearnService{
             if (row.getSection().getSection() != i) {
                 // 이전 섹션의 데이터를 sectionsList에 추가
                 Map<String, Object> sections = new LinkedHashMap<>();
+                sections.put("sectionId",row.getSection().getId());
                 sections.put("section", i);
                 sections.put("grade", row.getSection().getGrade());
                 sections.put("word", wordList);
@@ -108,6 +109,7 @@ public class LearnServiceImpl implements LearnService{
         // 마지막 섹션 추가
         if (!wordList.isEmpty()) {
             Map<String, Object> sections = new LinkedHashMap<>();
+            sections.put("sectionId",vocaList.get(vocaList.size() - 1).getSection().getId());
             sections.put("section", i);
             sections.put("grade", vocaList.get(vocaList.size() - 1).getSection().getGrade());
             sections.put("word", wordList);
