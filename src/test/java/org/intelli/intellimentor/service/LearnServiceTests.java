@@ -117,6 +117,26 @@ public class LearnServiceTests {
         log.info(resultData);
     }
 
+    //북마크(대시보드)
+    @Test
+    public void setBookmark(){
+        Long titleId = 1L;
+        List<Long> trueIdList=new ArrayList<>();
+//        List<Long> falseIdList=new ArrayList<>();
+        trueIdList.add(1L);
+        trueIdList.add(2L);
+//        falseIdList.add(3L);
+//        falseIdList.add(4L);
+        List<Voca> vocaList1 = vocaRepository.getVocaByTitleAndIdIn(titleId,trueIdList);
+        log.info("before: "+vocaList1.get(0).isBookmark());
+        for(Voca row:vocaList1){
+            row.setBookmark(true);
+        }
+        vocaRepository.saveAll(vocaList1);
+        log.info("after: "+vocaList1.get(0).isBookmark());
+
+    }
+
     //퀴즈 생성(Eng)
     @Test
     public void testGetQuizEng(){

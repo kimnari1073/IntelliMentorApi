@@ -57,6 +57,23 @@ public class LearnServiceImpl implements LearnService{
         sectionRepository.deleteAllById(sectionList);
         log.info("Section Delete..");
     }
+
+    @Override
+    public void modifiyBookmark(Long titleId, List<Long> trueIdList, List<Long> falseIdList) {
+        List<Voca> vocaList1 = vocaRepository.getVocaByTitleAndIdIn(titleId,trueIdList);
+        List<Voca> vocaList2 = vocaRepository.getVocaByTitleAndIdIn(titleId,falseIdList);
+        log.info("before: "+vocaList1.get(0).isBookmark());
+        for(Voca row:vocaList1){
+            row.setBookmark(true);
+        }
+        for(Voca row:vocaList2){
+            row.setBookmark(false);
+        }
+        vocaRepository.saveAll(vocaList1);
+        vocaRepository.saveAll(vocaList2);
+        log.info("after: "+vocaList1.get(0).isBookmark());
+    }
+
     @Override
     @Transactional(readOnly = true)
     public Map<String, Object> getLearn(Long titleId) {
