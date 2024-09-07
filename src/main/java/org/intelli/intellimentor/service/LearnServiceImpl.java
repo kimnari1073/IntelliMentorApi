@@ -97,6 +97,7 @@ public class LearnServiceImpl implements LearnService{
                 i++;
             }
             Map<String, Object> wordMap = new LinkedHashMap<>();
+            wordMap.put("id",row.getId());
             wordMap.put("eng", row.getEng());
             wordMap.put("kor", row.getKor());
             wordMap.put("bookmark", row.isBookmark());
