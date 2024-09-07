@@ -112,9 +112,18 @@ public class LearnServiceTests {
         Map<String, Object> resultData = new LinkedHashMap<>();
         resultData.put("titleId",vocaList.get(0).getTitle().getId());
         resultData.put("title",vocaList.get(0).getTitle().getTitle());
+        resultData.put("maxSection",i);
         resultData.put("data", sectionsList);
         log.info(resultData);
     }
+
+    //퀴즈 생성(Eng)
+    @Test
+    public void testGetQuizEng(){
+        Long titleId = 1L;
+        int section =1;
+    }
+
 //
 //    @Test
 //    public void testUpdateLearn(){

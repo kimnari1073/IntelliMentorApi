@@ -98,6 +98,7 @@ public class LearnServiceImpl implements LearnService{
         Map<String, Object> resultData = new LinkedHashMap<>();
         resultData.put("titleId",vocaList.get(0).getTitle().getId());
         resultData.put("title",vocaList.get(0).getTitle().getTitle());
+        resultData.put("maxSection",i);
         resultData.put("data", sectionsList);
         return resultData;
     }
