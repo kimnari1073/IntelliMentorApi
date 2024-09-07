@@ -62,16 +62,20 @@ public class LearnServiceImpl implements LearnService{
     public void modifiyBookmark(Long titleId, List<Long> trueIdList, List<Long> falseIdList) {
         List<Voca> vocaList1 = vocaRepository.getVocaByTitleAndIdIn(titleId,trueIdList);
         List<Voca> vocaList2 = vocaRepository.getVocaByTitleAndIdIn(titleId,falseIdList);
-        log.info("before: "+vocaList1.get(0).isBookmark());
-        for(Voca row:vocaList1){
-            row.setBookmark(true);
+        if(!vocaList1.isEmpty()){
+            for(Voca row:vocaList1){
+                row.setBookmark(true);
+            }
+            vocaRepository.saveAll(vocaList1);
         }
-        for(Voca row:vocaList2){
-            row.setBookmark(false);
+        if(!vocaList2.isEmpty()){
+            for(Voca row:vocaList2){
+                row.setBookmark(false);
+            }
+            vocaRepository.saveAll(vocaList2);
         }
-        vocaRepository.saveAll(vocaList1);
-        vocaRepository.saveAll(vocaList2);
-        log.info("after: "+vocaList1.get(0).isBookmark());
+
+
     }
 
     @Override
