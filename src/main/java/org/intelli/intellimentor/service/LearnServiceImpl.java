@@ -126,27 +126,42 @@ public class LearnServiceImpl implements LearnService{
         resultData.put("data", sectionsList);
         return resultData;
     }
-//
-//    @Override
-//    public Map<String, Object> getQuizEng(String email, String title, int section) {
-//        List<Voca> listVoca = vocaRepository.findByUserIdAndTitleAndSection(email,title,section);
-//        List<List<String>> result = new ArrayList<>();
-//
-//        for (Voca voca:
-//                listVoca) {
-//            List<String> tem = new ArrayList<>();
-//            List<Voca> choices = testFindChoices(listVoca,voca);
-//            for (Voca v : choices) {
-//                tem.add(v.getKor());
-//            }
-//            tem.add(voca.getKor());
-//            Collections.shuffle(tem);
-//            tem.add(0,voca.getEng());
-//            result.add(tem);
-//        }
-//        Collections.shuffle(result);
-//        return Map.of("data",result);
-//    }
+
+    @Override
+    public Map<String, Object> getQuizEng(Long sectionId) {
+        List<Voca> vocaList = vocaRepository.getVocaBySectionId(sectionId);
+        log.info("vocaList: " +vocaList);
+        List<Map<String,Object>> result = new ArrayList<>();
+        int quizNumber = 1;
+        for(Voca row:vocaList){
+
+            List<Map<String,Object>> temList = new ArrayList<>();
+            List<Voca> choices = testFindChoices(vocaList,row);
+            log.info(choices);
+            for(Voca voca:choices){
+                Map<String,Object> temMap = new HashMap<>();
+                temMap.put("id",voca.getId());
+                temMap.put("kor",voca.getKor());
+                temList.add(temMap);
+            }
+            Collections.shuffle(temList);
+
+            //메인 영어 단어 추가
+            Map<String,Object> temMap = new HashMap<>();
+            temMap.put("id",row.getId());
+            temMap.put("eng",row.getEng());
+            temList.add(0,temMap);
+
+
+            Map<String, Object> linkedMap = new LinkedHashMap<>();
+            linkedMap.put("quizNumber", quizNumber);
+            linkedMap.put("quizList", temList);
+            result.add(linkedMap);
+            quizNumber++;
+
+        }
+        return Map.of("quiz",result);
+    }
 //
 //    @Override
 //    public Map<String, Object> getQuizKor(String email, String title, int section) {
@@ -170,15 +185,17 @@ public class LearnServiceImpl implements LearnService{
 //    }
 //
 //
-//    private List<Voca> testFindChoices(List<Voca> listVoca, Voca excludedVoca){
-//        List<Voca> filteredList = new ArrayList<>(listVoca);// 원본 리스트 복사
-//
-//        filteredList.remove(excludedVoca);
-//        Collections.shuffle(filteredList);
-//
-//        // 상위 3개 요소를 선택, 반환
-//        List<Voca> randomVocaList = filteredList.subList(0, Math.min(3, filteredList.size()));
-//        return randomVocaList;
-//    }
+    private List<Voca> testFindChoices(List<Voca> listVoca, Voca excludedVoca){
+        List<Voca> filteredList = new ArrayList<>(listVoca);// 원본 리스트 복사
+
+        filteredList.remove(excludedVoca);
+        Collections.shuffle(filteredList);
+
+        // 상위 3개 요소를 선택, 반환
+        List<Voca> randomVocaList = filteredList.subList(0, Math.min(3, filteredList.size()));
+        // 정답 추가
+        randomVocaList.add(excludedVoca);
+        return randomVocaList;
+    }
 
 }

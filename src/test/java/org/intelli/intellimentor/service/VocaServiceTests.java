@@ -62,7 +62,7 @@ public class VocaServiceTests {
         titleRepository.save(title2);
 
         //섹션설정
-        int sectionMax = 3;
+        int sectionMax = 2;
         List<Long> sectionIdList = new ArrayList<>();
         for(int i =1; i<=sectionMax;i++){
             Section section = Section.builder().section(i).build();

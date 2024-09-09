@@ -56,16 +56,14 @@ public class LearnController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 
     }
-//
-//    @GetMapping("/quiz/eng/{title}/{section}")
-//    public ResponseEntity<?> getQuizEng(
-//            @RequestHeader("Authorization") String authHeader,
-//            @PathVariable("title") String title,
-//            @PathVariable("section") int section){
-//        String email = JWTUtil.JWTtoEmail(authHeader);
-//        Map<String, Object> result = learnService.getQuizEng(email,title,section);
-//        return ResponseEntity.status(HttpStatus.OK).body(result);
-//    }
+
+    @GetMapping("/quiz/eng/{sectionId}")
+    public ResponseEntity<?> getQuizEng(
+            @PathVariable("sectionId") Long sectionId){
+        Map<String, Object> result = learnService.getQuizEng(sectionId);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
+
 //    @GetMapping("quiz/kor/{title}/{section}")
 //    public ResponseEntity<?> getQuizKor(
 //            @RequestHeader("Authorization") String authHeader,
