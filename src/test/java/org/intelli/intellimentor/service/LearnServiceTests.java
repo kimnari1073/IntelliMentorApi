@@ -1,5 +1,7 @@
 package org.intelli.intellimentor.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.domain.Section;
 import org.intelli.intellimentor.domain.Voca;
@@ -7,7 +9,10 @@ import org.intelli.intellimentor.repository.SectionRepository;
 import org.intelli.intellimentor.repository.VocaRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
@@ -181,6 +186,54 @@ public class LearnServiceTests {
         log.info("quiz: "+result);
     }
 
+    @Value("${openai.api.key}")
+    private String apiKey;
+    private final String API_URL = "https://api.openai.com/v1/chat/completions";
+    private final RestTemplate restTemplate = new RestTemplate();
+    //chatGPT 연결 테스트
+    @Test
+    public void generateChatResponse() {
+    String prompt = "사과와 어감이 비슷하지만 의미는 다른 한글 단어3개를 알려줘";
+        try {
+            // HTTP 요청 헤더 설정
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(apiKey);
+
+            // 요청 본문 작성
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("model", "gpt-4o-mini");
+            requestBody.put("messages", new Object[]{
+                    // 'system' role로 모델에 기본 지침 제공
+                    Map.of("role", "system", "content", "답은 리스트 형태로 [\"정답1\",\"정답2\",\"정답3\"]과 같이 말해줘.\n"),
+                    // 'user' role로 실제 사용자 입력 제공
+                    Map.of("role", "user", "content", prompt)
+            });
+
+            HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+
+            // API 호출
+            ResponseEntity<String> responseEntity = restTemplate.exchange(API_URL, HttpMethod.POST, requestEntity, String.class);
+
+            // 응답 처리
+            String responseBody = responseEntity.getBody();
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode jsonNode = mapper.readTree(responseBody);
+            String chatResponse = jsonNode.path("choices").get(0).path("message").path("content").asText();
+
+
+            List<String> resultList = new ArrayList<>(
+                    Arrays.asList(chatResponse.replace("[", "")
+                            .replace("]", "")
+                            .split(", ")));
+            log.info("chatResponse: "+chatResponse);
+            log.info("resultList: "+resultList);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.info("Error occurred: "+e.getMessage());
+        }
+    }
 //
 //    @Test
 //    public void testUpdateLearn(){
