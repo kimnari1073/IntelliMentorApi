@@ -128,37 +128,21 @@ public class LearnServiceImpl implements LearnService{
     }
 
     @Override
-    public Map<String, Object> getQuizEng(Long sectionId) {
+    public Map<String, Object> getQuiz(Long sectionId,String subject) {
         List<Voca> vocaList = vocaRepository.getVocaBySectionId(sectionId);
-        log.info("vocaList: " +vocaList);
-        List<Map<String,Object>> result = new ArrayList<>();
-        int quizNumber = 1;
-        for(Voca row:vocaList){
+        List<List<Map<String, Object>>> result = new ArrayList<>(); // quizList가 아닌 List로 담음
 
-            List<Map<String,Object>> temList = new ArrayList<>();
-            List<Voca> choices = testFindChoices(vocaList,row);
-            log.info(choices);
-            for(Voca voca:choices){
-                Map<String,Object> temMap = new HashMap<>();
-                temMap.put("id",voca.getId());
-                temMap.put("kor",voca.getKor());
-                temList.add(temMap);
+        if (subject.contains("e")) {
+            for (Voca row : vocaList) {
+                List<Map<String, Object>> temList = testFindChoices(vocaList, row, "e");
+                result.add(temList);
             }
-            Collections.shuffle(temList);
-
-            //메인 영어 단어 추가
-            Map<String,Object> temMap = new HashMap<>();
-            temMap.put("id",row.getId());
-            temMap.put("eng",row.getEng());
-            temList.add(0,temMap);
-
-
-            Map<String, Object> linkedMap = new LinkedHashMap<>();
-            linkedMap.put("quizNumber", quizNumber);
-            linkedMap.put("quizList", temList);
-            result.add(linkedMap);
-            quizNumber++;
-
+        }
+        if (subject.contains("k")) {
+            for (Voca row : vocaList) {
+                List<Map<String, Object>> temList = testFindChoices(vocaList, row, "k");
+                result.add(temList);
+            }
         }
         return Map.of("quiz",result);
     }
@@ -185,17 +169,30 @@ public class LearnServiceImpl implements LearnService{
 //    }
 //
 //
-    private List<Voca> testFindChoices(List<Voca> listVoca, Voca excludedVoca){
-        List<Voca> filteredList = new ArrayList<>(listVoca);// 원본 리스트 복사
-
-        filteredList.remove(excludedVoca);
+    private List<Map<String,Object>> testFindChoices(List<Voca> listVoca, Voca mainVoca,String type){
+        List<Voca> filteredList = new ArrayList<>(listVoca); // 원본 리스트 복사
+        filteredList.remove(mainVoca); //서브 필드를 위한 메인 필드 제거
         Collections.shuffle(filteredList);
 
-        // 상위 3개 요소를 선택, 반환
-        List<Voca> randomVocaList = filteredList.subList(0, Math.min(3, filteredList.size()));
-        // 정답 추가
-        randomVocaList.add(excludedVoca);
-        return randomVocaList;
+        List<Map<String, Object>> resultList = new ArrayList<>();
+
+        // 메인 및 서브 필드 설정
+        String mainField = type.equals("e") ? "eng" : "kor";
+        String subField = type.equals("e") ? "kor" : "eng";
+
+        // 메인 단어 추가
+        resultList.add(Map.of("id", mainVoca.getId(), mainField, type.equals("e") ? mainVoca.getEng() : mainVoca.getKor()));
+
+        // 랜덤으로 선택된 3개의 요소를 추가
+        filteredList.stream()
+                .limit(3) // 3개의 요소로 제한
+                .forEach(voca -> resultList.add(
+                        Map.of("id", voca.getId(), subField, type.equals("e") ? voca.getKor() : voca.getEng())));
+
+        int randomInt = (int) (Math.random() * 4) + 1;
+        resultList.add(randomInt,Map.of("id",mainVoca.getId(),subField, type.equals("e") ? mainVoca.getKor() : mainVoca.getEng()));
+
+        return resultList;
     }
 
 }

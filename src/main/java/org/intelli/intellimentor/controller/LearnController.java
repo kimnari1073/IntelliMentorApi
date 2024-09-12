@@ -57,10 +57,11 @@ public class LearnController {
 
     }
 
-    @GetMapping("/quiz/eng/{sectionId}")
-    public ResponseEntity<?> getQuizEng(
+    @GetMapping("/quiz/{eks}/{sectionId}")
+    public ResponseEntity<?> getQuiz(
+            @PathVariable("eks")String subject,
             @PathVariable("sectionId") Long sectionId){
-        Map<String, Object> result = learnService.getQuizEng(sectionId);
+        Map<String, Object> result = learnService.getQuiz(sectionId,subject);
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 

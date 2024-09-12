@@ -10,6 +10,6 @@ public interface LearnService {
     void deleteLearn(Long titleId);//학습초기화
     void modifiyBookmark(Long titleId, List<Long>trueIdList, List<Long>falseIdList);
     Map<String, Object> getLearn(Long titleId);
-    Map<String, Object> getQuizEng(Long sectionId);
+    Map<String, Object> getQuiz(Long sectionId,String subject);
 //    Map<String, Object> getQuizKor(String email, String title, int section);
 }
