@@ -24,6 +24,11 @@ public class LearnServiceTests {
     private SectionRepository sectionRepository;
     @Autowired
     private VocaRepository vocaRepository;
+    private final String API_URL = "https://api.openai.com/v1/chat/completions";
+    private final RestTemplate restTemplate = new RestTemplate();
+    @Value("${openai.api.key}")
+    private String apiKey;
+
     //섹션 설정
     @Test
     public void testSetSection() {
@@ -145,51 +150,50 @@ public class LearnServiceTests {
 
     }
 
-    //퀴즈 생성(Eng)
+    //퀴즈 생성
     //Map<String,List<Map<String,Object>>
     @Test
-    public void testGetQuizEng(){
-        Long sectionId =15L;
+    public void testGetQuiz(){
+        Long sectionId = 25L;
+        String subject = "eks";
 
         List<Voca> vocaList = vocaRepository.getVocaBySectionId(sectionId);
-        log.info("vocaList: " +vocaList);
-        List<Map<String,Object>> result = new ArrayList<>();
-        int quizNumber = 1;
-        for(Voca row:vocaList){
+        List<List<Map<String, Object>>> result = new ArrayList<>(); // quizList가 아닌 List로 담음
 
-            List<Map<String,Object>> temList = new ArrayList<>();
-            List<Voca> choices = testFindChoices(vocaList,row);
-            log.info(choices);
-            for(Voca voca:choices){
-                Map<String,Object> temMap = new HashMap<>();
-                temMap.put("id",voca.getId());
-                temMap.put("kor",voca.getKor());
-                temList.add(temMap);
+        if (subject.contains("e")) {
+            for (Voca row : vocaList) {
+                List<Map<String, Object>> temList = testFindChoices(vocaList, row, "e");
+
+                // 퀴즈 결과에 추가 (quizList라는 키 없이 바로 추가)
+                result.add(temList);
             }
-            Collections.shuffle(temList);
+        }
+        if (subject.contains("k")) {
+            for (Voca row : vocaList) {
+                List<Map<String, Object>> temList = testFindChoices(vocaList, row, "k");
 
-            //메인 영어 단어 추가
-            Map<String,Object> temMap = new HashMap<>();
-            temMap.put("id",row.getId());
-            temMap.put("eng",row.getEng());
-            temList.add(0,temMap);
-
-
-            Map<String, Object> linkedMap = new LinkedHashMap<>();
-            linkedMap.put("quizNumber", quizNumber);
-            linkedMap.put("quizList", temList);
-            result.add(linkedMap);
-            quizNumber++;
-
+                // 퀴즈 결과에 추가 (quizList라는 키 없이 바로 추가)
+                result.add(temList);
+            }
         }
 
-        log.info("quiz: "+result);
+        log.info("quiz: " + result);
     }
 
-    @Value("${openai.api.key}")
-    private String apiKey;
-    private final String API_URL = "https://api.openai.com/v1/chat/completions";
-    private final RestTemplate restTemplate = new RestTemplate();
+    //퀴즈 채점
+    @Test
+    public void testMarkQuiz(){
+        Long sectionId = 21L;
+        List<Integer> quizList = List.of(83, 85, 87, 89, 91);
+
+        //sectionId=25L인 voca List
+        List<Voca> vocaList = vocaRepository.getVocaBySectionId(sectionId);
+
+
+    }
+
+
+
     //chatGPT 연결 테스트
     @Test
     public void generateChatResponse() {
@@ -249,16 +253,29 @@ public class LearnServiceTests {
 //    public void testCreateQuiz(){
 //
 //    }
-        private List<Voca> testFindChoices(List<Voca> listVoca, Voca excludedVoca){
-        List<Voca> filteredList = new ArrayList<>(listVoca);// 원본 리스트 복사
+        private List<Map<String,Object>> testFindChoices(List<Voca> listVoca, Voca mainVoca,String type){
+            List<Voca> filteredList = new ArrayList<>(listVoca); // 원본 리스트 복사
+            filteredList.remove(mainVoca); //서브 필드를 위한 메인 필드 제거
+            Collections.shuffle(filteredList);
 
-        filteredList.remove(excludedVoca);
-        Collections.shuffle(filteredList);
+            List<Map<String, Object>> resultList = new ArrayList<>();
 
-        // 상위 3개 요소를 선택, 반환
-        List<Voca> randomVocaList = filteredList.subList(0, Math.min(3, filteredList.size()));
-        // 정답 추가
-        randomVocaList.add(excludedVoca);
-        return randomVocaList;
-    }
+            // 메인 및 서브 필드 설정
+            String mainField = type.equals("e") ? "eng" : "kor";
+            String subField = type.equals("e") ? "kor" : "eng";
+
+            // 메인 단어 추가
+            resultList.add(Map.of("id", mainVoca.getId(), mainField, type.equals("e") ? mainVoca.getEng() : mainVoca.getKor()));
+
+            // 랜덤으로 선택된 3개의 요소를 추가
+            filteredList.stream()
+                    .limit(3) // 3개의 요소로 제한
+                    .forEach(voca -> resultList.add(
+                            Map.of("id", voca.getId(), subField, type.equals("e") ? voca.getKor() : voca.getEng())));
+
+            int randomInt = (int) (Math.random() * 4) + 1;
+            resultList.add(randomInt,Map.of("id",mainVoca.getId(),subField, type.equals("e") ? mainVoca.getKor() : mainVoca.getEng()));
+
+            return resultList;
+        }
 }
