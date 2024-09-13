@@ -151,7 +151,6 @@ public class LearnServiceTests {
     }
 
     //퀴즈 생성
-    //Map<String,List<Map<String,Object>>
     @Test
     public void testGetQuiz(){
         Long sectionId = 25L;
@@ -183,11 +182,28 @@ public class LearnServiceTests {
     //퀴즈 채점
     @Test
     public void testMarkQuiz(){
-        Long sectionId = 21L;
-        List<Integer> quizList = List.of(83, 85, 87, 89, 91);
+        Long sectionId = 25L;
+        List<Long> quizList = List.of(95L, 88L, 101L, 104L, 107L);
+        List<Long> answerList = List.of(95L,88L,100L,102L,102L);
 
+        if(quizList.size()!=answerList.size()){
+            log.info("에러에러");//에러
+        }
         //sectionId=25L인 voca List
         List<Voca> vocaList = vocaRepository.getVocaBySectionId(sectionId);
+
+        int score = 0;
+        Set<Long> incorrectSet = new LinkedHashSet<>();
+        for(int i = 0; i<answerList.size();i++){
+            if(quizList.get(i).equals(answerList.get(i))){
+                score++;
+            }
+            else {
+                incorrectSet.add(quizList.get(i));
+            }
+        }
+        log.info("score: "+score);
+        log.info("incorrectSet: "+incorrectSet);
 
 
     }

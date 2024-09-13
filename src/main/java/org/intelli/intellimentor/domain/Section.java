@@ -24,7 +24,7 @@ public class Section {
     @PrePersist
     public void prePersist() {
         if (this.grade == null || this.grade.isEmpty()) {
-            this.grade = "N/A";
+            this.grade = "-";
         }
     }
 }
