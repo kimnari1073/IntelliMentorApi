@@ -2,6 +2,7 @@ package org.intelli.intellimentor.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.domain.Section;
 import org.intelli.intellimentor.domain.Voca;
@@ -196,20 +197,12 @@ public class LearnServiceTests {
     //퀴즈 채점
     @Test
     public void testMarkQuiz(){
-        Long sectionId = 25L;
-//        String subject = "eks";
-//        List<Long> quizList_eng = List.of(95L, 88L, 101L, 104L, 107L);
-//        List<Long> answerList_eng = List.of(95L,88L,100L,102L,102L);
-//        List<Long> quizList_kor = List.of(95L, 88L, 101L, 104L, 107L);
-//        List<Long> answerList_kor = List.of(95L, 88L, 101L, 104L, 102L);
-//        List<Long> quizList_sen = null;
-//        List<Long> answerList_sen = null;
-
         //값 세팅
+        Long sectionId = 5L;
         List<Map<String,Object>> requestList = new ArrayList<>();
         boolean flag = true;
         for(int intI=0;intI<2;intI++){
-            for(Long i =0L; i<5L;i++){
+            for(Long i =0L; i<10L;i++){
                 Map<String, Object> addList = new LinkedHashMap<>();
 
                 addList.put("id",90L+i);
@@ -219,7 +212,7 @@ public class LearnServiceTests {
                 else{
                     addList.put("type","k");
                 }
-                addList.put("correct",flag);
+                addList.put("correct",true);
                 requestList.add(addList);
                 flag = !flag;
             }
@@ -227,9 +220,10 @@ public class LearnServiceTests {
         log.info("request: "+ requestList);
 
         //로직
-        int scoreEng = 0;
-        int scoreKor = 0;
-        int scoreSen = 0;
+        Map<String, Integer> scoreMap = new LinkedHashMap<>();
+        scoreMap.put("e",null);
+        scoreMap.put("k",null);
+        scoreMap.put("s",null);
         List<Long> incorrectList = new LinkedList<>();
 
         for (Map<String, Object> row : requestList) {
@@ -238,23 +232,77 @@ public class LearnServiceTests {
             if ((boolean) row.get("correct")) {
                 switch (type) {
                     case "e":
-                        scoreEng++;
+                        // 'eng' 값이 null이면 0으로 초기화하고 1을 증가
+                        scoreMap.put("e", scoreMap.get("e") == null ? 1 : scoreMap.get("e") + 1);
                         break;
                     case "k":
-                        scoreKor++;
+                        scoreMap.put("k", scoreMap.get("k") == null ? 1 : scoreMap.get("k") + 1);
                         break;
                     case "s":
-                        scoreSen++;
+                        scoreMap.put("s", scoreMap.get("s") == null ? 1 : scoreMap.get("s") + 1);
                         break;
                 }
             } else {
                 incorrectList.add((Long) row.get("id"));
+                scoreMap.putIfAbsent((String) row.get("type"), 0);  // null인 경우 0으로 초기화
+
             }
         }
+        log.info("scoreMap: "+scoreMap);
 
-        //점수
 
+        //점수 업데이트 (백분율)
         Section section = sectionRepository.findById(sectionId).orElseThrow();
+        for (Map.Entry<String, Integer> entry : scoreMap.entrySet()) {
+            if(entry.getValue()!=null){
+                int score = (int) ((double) entry.getValue() / section.getVocaCount() * 100);
+
+                scoreMap.put(entry.getKey(), score);
+            }
+        }
+        section.setEngScore(scoreMap.get("e"));
+        log.info("sectionEngScore: "+section.getEngScore());
+        section.setKorScore(scoreMap.get("k"));
+        section.setSenScore(scoreMap.get("s"));
+
+        //grade계산
+
+        String grade = null;
+        if(scoreMap.get("e")==null||scoreMap.get("k")==null){
+            log.info("점수 없음");
+            grade = "-";
+        }else{
+            int score = (scoreMap.get("e")+scoreMap.get("k"))/2;
+            // 기본 등급 설정
+            if (score >= 90) {
+                grade = "A";
+            } else if (score >= 80) {
+                grade = "B";
+            } else if (score >= 70) {
+                grade = "C";
+            } else if (score >= 60) {
+                grade = "D";
+            } else {
+                grade = "F";
+            }
+
+            // + 등급 설정
+            if(section.getSenScore()!=null){
+                if (score >= 90 && section.getSenScore() >= 90) {
+                    grade += "+";
+                } else if (score >= 80 && section.getSenScore() >= 80) {
+                    grade += "+";
+                } else if (score >= 70 && section.getSenScore() >= 70) {
+                    grade += "+";
+                } else if (score >= 60 && section.getSenScore() >= 60) {
+                    grade += "+";
+                }
+            }
+        }
+        section.setGrade(grade);
+
+        sectionRepository.save(section);
+
 
         //mistakes 필드 수정 로직
         Map<Long, Integer> countMap = new HashMap<>();

@@ -17,11 +17,11 @@ public class Section {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private int section;
-    private int vocaCount;
+    private Integer vocaCount;
     private String grade;
-    private String engScore;
-    private String korScore;
-    private String sentenceScore;
+    private Integer engScore;
+    private Integer korScore;
+    private Integer senScore;
     @PrePersist
     public void prePersist() {
         if (this.grade == null || this.grade.isEmpty()) {
