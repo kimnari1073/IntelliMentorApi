@@ -32,28 +32,42 @@ public class LearnServiceTests {
     //섹션 설정
     @Test
     public void testSetSection() {
-        Long titleId = 6L;
+        Long titleId = 2L;
         int requestSection = 3;
-        //섹션 생성
+
+        // 섹션 생성
         List<Section> saveSectionList = new ArrayList<>();
-        for(int i=1;i<=requestSection;i++){
+        for (int i = 1; i <= requestSection; i++) {
             Section section = Section.builder()
                     .section(i)
                     .build();
             saveSectionList.add(section);
         }
-        sectionRepository.saveAll(saveSectionList);
-        log.info("Section save.");
 
-        //Voca섹션설정
-        List<Voca> vocaList = vocaRepository.getVocaListDetails(titleId);
-        int i =0;
-        for(Voca row:vocaList){
-            row.setSection(saveSectionList.get(i%requestSection));
+        // 섹션별 Voca 카운트 저장을 위한 배열 (각 섹션별로 카운트를 관리)
+        int[] sectionVocaCount = new int[requestSection];
+
+        // Voca 섹션 설정
+        List<Voca> vocaList = vocaRepository.findByTitleIdOrderById(titleId);
+        int i = 0;
+        for (Voca row : vocaList) {
+            // 섹션을 할당
+            Section section = saveSectionList.get(i % requestSection);
+            row.setSection(section);
+
+            // 해당 섹션의 카운트를 증가
+            sectionVocaCount[i % requestSection]++;
+
             i++;
         }
-        vocaRepository.saveAll(vocaList);
-        log.info("Voca save..");
+
+        // 섹션별 카운트 저장
+        for (int j = 0; j < requestSection; j++) {
+            saveSectionList.get(j).setVocaCount(sectionVocaCount[j]);  // 각 섹션에 카운트 저장
+        }
+
+        sectionRepository.saveAll(saveSectionList);  // 섹션 저장
+        vocaRepository.saveAll(vocaList);  // Voca 저장
     }
 
     //섹션 초기화
@@ -65,7 +79,7 @@ public class LearnServiceTests {
         List<Long> sectionList = vocaRepository.getSectionList(titleId);
 
         //List<Voca> 조회 및 Section reset삭제
-        List<Voca> vocaList = vocaRepository.getVocaListDetails(titleId);
+        List<Voca> vocaList = vocaRepository.findByTitleIdOrderById(titleId);
         for(Voca row:vocaList){
             row.setSection(null);
         }
@@ -84,7 +98,7 @@ public class LearnServiceTests {
     public void testGetLearn(){
         Long titleId=1L;
 
-        List<Voca> vocaList = vocaRepository.getVocaListDetails(titleId);
+        List<Voca> vocaList = vocaRepository.findByTitleIdOrderById(titleId);
         vocaList.sort(Comparator.comparing(voca -> voca.getSection().getSection()));
         List<Map<String, Object>> wordList = new ArrayList<>();
         List<Map<String, Object>> sectionsList = new ArrayList<>();
@@ -183,28 +197,133 @@ public class LearnServiceTests {
     @Test
     public void testMarkQuiz(){
         Long sectionId = 25L;
-        List<Long> quizList = List.of(95L, 88L, 101L, 104L, 107L);
-        List<Long> answerList = List.of(95L,88L,100L,102L,102L);
+//        String subject = "eks";
+//        List<Long> quizList_eng = List.of(95L, 88L, 101L, 104L, 107L);
+//        List<Long> answerList_eng = List.of(95L,88L,100L,102L,102L);
+//        List<Long> quizList_kor = List.of(95L, 88L, 101L, 104L, 107L);
+//        List<Long> answerList_kor = List.of(95L, 88L, 101L, 104L, 102L);
+//        List<Long> quizList_sen = null;
+//        List<Long> answerList_sen = null;
 
-        if(quizList.size()!=answerList.size()){
-            log.info("에러에러");//에러
+        //값 세팅
+        List<Map<String,Object>> requestList = new ArrayList<>();
+        boolean flag = true;
+        for(int intI=0;intI<2;intI++){
+            for(Long i =0L; i<5L;i++){
+                Map<String, Object> addList = new LinkedHashMap<>();
+
+                addList.put("id",90L+i);
+                if(flag){
+                    addList.put("type","e");
+                }
+                else{
+                    addList.put("type","k");
+                }
+                addList.put("correct",flag);
+                requestList.add(addList);
+                flag = !flag;
+            }
         }
+        log.info("request: "+ requestList);
+
+        //로직
+        int scoreEng = 0;
+        int scoreKor = 0;
+        int scoreSen = 0;
+        List<Long> incorrectList = new LinkedList<>();
+
+        for (Map<String, Object> row : requestList) {
+            String type = (String) row.get("type");
+
+            if ((boolean) row.get("correct")) {
+                switch (type) {
+                    case "e":
+                        scoreEng++;
+                        break;
+                    case "k":
+                        scoreKor++;
+                        break;
+                    case "s":
+                        scoreSen++;
+                        break;
+                }
+            } else {
+                incorrectList.add((Long) row.get("id"));
+            }
+        }
+
+        //점수
+
+        Section section = sectionRepository.findById(sectionId).orElseThrow();
+
+        //mistakes 필드 수정 로직
+        Map<Long, Integer> countMap = new HashMap<>();
+        for (Long id : incorrectList) {
+            countMap.put(id, countMap.getOrDefault(id, 0) + 1);
+        }
+        log.info("countMap: "+countMap);
+
+        List<Long> keyList = new ArrayList<>(countMap.keySet());
+        List<Voca> saveMistakes = vocaRepository.findAllById(keyList);
+        for(Voca row : saveMistakes){
+            row.setMistakes(row.getMistakes()+countMap.get(row.getId()));
+        }
+        vocaRepository.saveAll(saveMistakes);
+
+
         //sectionId=25L인 voca List
-        List<Voca> vocaList = vocaRepository.getVocaBySectionId(sectionId);
+//        List<Voca> vocaList = vocaRepository.getVocaBySectionId(sectionId);
 
-        int score = 0;
-        Set<Long> incorrectSet = new LinkedHashSet<>();
-        for(int i = 0; i<answerList.size();i++){
-            if(quizList.get(i).equals(answerList.get(i))){
-                score++;
-            }
-            else {
-                incorrectSet.add(quizList.get(i));
-            }
-        }
-        log.info("score: "+score);
-        log.info("incorrectSet: "+incorrectSet);
-
+//        Set<Long> incorrectSet = new LinkedHashSet<>();
+//        List<Long> incorrectListVoca = new ArrayList<>();
+//
+//        Voca incorrectVoca = null;
+//        //eng
+//        int score = 0;
+//        for(int i = 0; i<quizList_eng.size();i++){
+//            if(quizList_eng.get(i).equals(answerList_eng.get(i))){
+//                score++;
+//            }
+//            else {
+//                incorrectSet.add(quizList_eng.get(i));
+//                incorrectListVoca.add(quizList_eng.get(i));
+//            }
+//        }
+//        List<Voca> saveListVoca = vocaRepository.findAllById(incorrectListVoca);
+//        for(Voca row:saveListVoca){
+//            row.setMistakes(row.getMistakes()+1);
+//        }
+//        vocaRepository.saveAll(saveListVoca);
+//        log.info("eng mistakes save...");
+//
+//        log.info("eng score: "+score);
+//        log.info("grade: " + ((double) score / quizList_eng.size()) * 100);
+//        log.info("incorrectSet: "+incorrectSet);
+//
+//        //kor
+//        score = 0;
+//        incorrectListVoca.clear();
+//        saveListVoca.clear();
+//        for(int i = 0; i<quizList_kor.size();i++){
+//            if(quizList_kor.get(i).equals(answerList_kor.get(i))){
+//                score++;
+//            }
+//            else {
+//                incorrectSet.add(quizList_kor.get(i));
+//                incorrectListVoca.add(quizList_kor.get(i));
+//            }
+//        }
+//        saveListVoca = vocaRepository.findAllById(incorrectListVoca);
+//        for(Voca row:saveListVoca){
+//            row.setMistakes(row.getMistakes()+1);
+//        }
+//        vocaRepository.saveAll(saveListVoca);
+//        log.info("kor mistakes save...");
+//
+//        log.info("kor score: "+score);
+//        log.info("grade: " + ((double) score / quizList_kor.size()) * 100);
+//        log.info("incorrectSet: "+incorrectSet);
+//        //sen
 
     }
 
@@ -294,4 +413,5 @@ public class LearnServiceTests {
 
             return resultList;
         }
+
 }

@@ -18,26 +18,38 @@ import java.util.*;
 public class LearnServiceImpl implements LearnService{
     private final VocaRepository vocaRepository;
     private final SectionRepository sectionRepository;
+
+    //섹션 설정
     @Override
     public void setSection(Long titleId, int requestSection) {
-        //섹션 생성
+        //섹션 생성 (vocaCount = null)
         List<Section> saveSectionList = new ArrayList<>();
-        for(int i=1;i<=requestSection;i++){
+        for (int i = 1; i <= requestSection; i++) {
             Section section = Section.builder()
                     .section(i)
                     .build();
             saveSectionList.add(section);
         }
-        sectionRepository.saveAll(saveSectionList);
-        log.info("Section save.");
 
-        //Voca섹션설정
-        List<Voca> vocaList = vocaRepository.getVocaListDetails(titleId);
-        int i =0;
-        for(Voca row:vocaList){
-            row.setSection(saveSectionList.get(i%requestSection));
+        // Voca 섹션 설정
+        int[] sectionVocaCount = new int[requestSection];
+        List<Voca> vocaList = vocaRepository.findByTitleIdOrderById(titleId);
+        int i = 0;
+        for (Voca row : vocaList) {
+            // 섹션 할당
+            Section section = saveSectionList.get(i % requestSection);
+            row.setSection(section);
+
+            // 해당 섹션의 카운트를 증가
+            sectionVocaCount[i % requestSection]++;
+
             i++;
         }
+        // 섹션별 카운트 저장
+        for (int j = 0; j < requestSection; j++) {
+            saveSectionList.get(j).setVocaCount(sectionVocaCount[j]);  // 각 섹션에 카운트 저장
+        }
+        sectionRepository.saveAll(saveSectionList);
         vocaRepository.saveAll(vocaList);
     }
     @Override
@@ -46,7 +58,7 @@ public class LearnServiceImpl implements LearnService{
         List<Long> sectionList = vocaRepository.getSectionList(titleId);
 
         //List<Voca> 조회 및 Section reset삭제
-        List<Voca> vocaList = vocaRepository.getVocaListDetails(titleId);
+        List<Voca> vocaList = vocaRepository.findByTitleIdOrderById(titleId);
         for(Voca row:vocaList){
             row.setSection(null);
         }
@@ -81,7 +93,7 @@ public class LearnServiceImpl implements LearnService{
     @Override
     @Transactional(readOnly = true)
     public Map<String, Object> getLearn(Long titleId) {
-        List<Voca> vocaList = vocaRepository.getVocaListDetails(titleId);
+        List<Voca> vocaList = vocaRepository.findByTitleIdOrderById(titleId);
         vocaList.sort(Comparator.comparing(voca -> voca.getSection().getSection()));
         List<Map<String, Object>> wordList = new ArrayList<>();
         List<Map<String, Object>> sectionsList = new ArrayList<>();

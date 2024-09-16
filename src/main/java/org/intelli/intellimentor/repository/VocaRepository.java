@@ -22,10 +22,7 @@ public interface VocaRepository extends JpaRepository<Voca,Long> {
     List<Object[]> getVocaList(@Param("userId")String userId);
 
     //유저 단어 데이터 조회
-    @Query("SELECT v FROM Voca v " +
-            "WHERE v.title.id = :titleId " +
-            "ORDER BY v.id")
-    List<Voca> getVocaListDetails(@Param("titleId") Long titleId);
+    List<Voca> findByTitleIdOrderById(Long titleId);
 
     //section 조회
     @Query("SELECT DISTINCT v.section.id " +

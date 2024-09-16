@@ -67,7 +67,7 @@ public class VocaServiceImpl implements VocaService{
     @Transactional(readOnly = true)
     public Map<String, Object> getVocaListDetails(Long titleId) {
         String title = titleRepository.getTitle(titleId);
-        List<Voca> vocaList = vocaRepository.getVocaListDetails(titleId);
+        List<Voca> vocaList = vocaRepository.findByTitleIdOrderById(titleId);
         List<Map<String,Object>> wordList = new ArrayList<>();
         for(Voca row : vocaList){
             Map<String,Object> vocaListMap = new LinkedHashMap<>();
@@ -114,7 +114,7 @@ public class VocaServiceImpl implements VocaService{
                 &&!sectionList.contains(null)){
 
             //List<Voca> 조회 및 Section reset삭제
-            List<Voca> vocaList = vocaRepository.getVocaListDetails(title.getId());
+            List<Voca> vocaList = vocaRepository.findByTitleIdOrderById(title.getId());
             for(Voca row:vocaList){
                 row.setSection(null);
             }

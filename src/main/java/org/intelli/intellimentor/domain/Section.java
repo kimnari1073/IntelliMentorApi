@@ -17,6 +17,7 @@ public class Section {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private int section;
+    private int vocaCount;
     private String grade;
     private String engScore;
     private String korScore;

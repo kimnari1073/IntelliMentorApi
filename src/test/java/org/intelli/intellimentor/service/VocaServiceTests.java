@@ -125,7 +125,7 @@ public class VocaServiceTests {
         Long titleId = 1L; //토익
 
         String title = titleRepository.getTitle(titleId);
-        List<Voca> vocaList = vocaRepository.getVocaListDetails(titleId);
+        List<Voca> vocaList = vocaRepository.findByTitleIdOrderById(titleId);
 
 
         List<Map<String,Object>> wordList = new ArrayList<>();
@@ -198,7 +198,7 @@ public class VocaServiceTests {
                 &&!sectionList.isEmpty()){
 
             //List<Voca> 조회 및 Section reset삭제
-            List<Voca> vocaList = vocaRepository.getVocaListDetails(title.getId());
+            List<Voca> vocaList = vocaRepository.findByTitleIdOrderById(title.getId());
             for(Voca row:vocaList){
                 row.setSection(null);
             }
