@@ -54,6 +54,7 @@ public class LearnServiceImpl implements LearnService{
         sectionRepository.saveAll(saveSectionList);
         vocaRepository.saveAll(vocaList);
     }
+    //섹션 삭제
     @Override
     public void deleteLearn(Long titleId) {
         //Section 조회
@@ -72,6 +73,7 @@ public class LearnServiceImpl implements LearnService{
         log.info("Section Delete..");
     }
 
+    //북마크 수정
     @Override
     public void modifiyBookmark(Long titleId, List<Long> trueIdList, List<Long> falseIdList) {
         List<Voca> vocaList1 = vocaRepository.getVocaByTitleAndIdIn(titleId,trueIdList);
@@ -92,6 +94,7 @@ public class LearnServiceImpl implements LearnService{
 
     }
 
+    //학습 조회
     @Override
     @Transactional(readOnly = true)
     public Map<String, Object> getLearn(Long titleId) {
@@ -108,6 +111,7 @@ public class LearnServiceImpl implements LearnService{
                 sections.put("sectionId",row.getSection().getId());
                 sections.put("section", i);
                 sections.put("grade", row.getSection().getGrade());
+                sections.put("progress",row.getSection().getProgress());
                 sections.put("word", wordList);
                 sectionsList.add(sections);
                 log.info("sectionsList: "+sectionsList);
@@ -130,6 +134,7 @@ public class LearnServiceImpl implements LearnService{
             sections.put("sectionId",vocaList.get(vocaList.size() - 1).getSection().getId());
             sections.put("section", i);
             sections.put("grade", vocaList.get(vocaList.size() - 1).getSection().getGrade());
+            sections.put("progress",vocaList.get(vocaList.size() - 1).getSection().getProgress());
             sections.put("word", wordList);
             sectionsList.add(sections);
         }
@@ -161,6 +166,7 @@ public class LearnServiceImpl implements LearnService{
         return Map.of("quiz",result);
     }
 
+   //퀴즈 채점
     @Override
     public Map<String, Object> markQuiz(Long sectionId, QuizRequestDTO quizRequestDTO) {
         Map<String, Integer> scoreMap = new LinkedHashMap<>();
@@ -206,30 +212,29 @@ public class LearnServiceImpl implements LearnService{
             // 기본 등급 설정
             if (score >= 90) {
                 grade = "A";
+                if(section.getSenScore()>=90) grade+="+";
             } else if (score >= 80) {
                 grade = "B";
+                if(section.getSenScore()>=80) grade+="+";
             } else if (score >= 70) {
                 grade = "C";
+                if(section.getSenScore()>=70) grade+="+";
             } else if (score >= 60) {
                 grade = "D";
+                if(section.getSenScore()>=60) grade+="+";
             } else {
                 grade = "F";
             }
-
-            // + 등급 설정
-            if(section.getSenScore()!=null){
-                if (score >= 90 && section.getSenScore() >= 90) {
-                    grade += "+";
-                } else if (score >= 80 && section.getSenScore() >= 80) {
-                    grade += "+";
-                } else if (score >= 70 && section.getSenScore() >= 70) {
-                    grade += "+";
-                } else if (score >= 60 && section.getSenScore() >= 60) {
-                    grade += "+";
-                }
-            }
         }
         section.setGrade(grade);
+
+        //진행률
+        int progress = (
+                Optional.ofNullable(section.getEngScore()).orElse(0) +
+                        Optional.ofNullable(section.getKorScore()).orElse(0) +
+                        Optional.ofNullable(section.getSenScore()).orElse(0)
+        ) / 3;
+        section.setProgress(progress);
         sectionRepository.save(section);
 
         //결과 출력용

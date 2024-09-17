@@ -22,10 +22,15 @@ public class Section {
     private Integer engScore;
     private Integer korScore;
     private Integer senScore;
+    private Integer progress;
     @PrePersist
     public void prePersist() {
         if (this.grade == null || this.grade.isEmpty()) {
             this.grade = "-";
         }
+        if (this.progress == null) {
+            this.progress = 0;
+        }
+
     }
 }

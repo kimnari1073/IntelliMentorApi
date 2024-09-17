@@ -2,7 +2,6 @@ package org.intelli.intellimentor.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.domain.Section;
 import org.intelli.intellimentor.domain.Voca;
@@ -99,8 +98,10 @@ public class LearnServiceTests {
     //학습 조회
     @Test
     public void testGetLearn(){
+        //초기 데이터 세팅
         Long titleId=1L;
 
+        //로직
         List<Voca> vocaList = vocaRepository.findByTitleIdOrderById(titleId);
         vocaList.sort(Comparator.comparing(voca -> voca.getSection().getSection()));
         List<Map<String, Object>> wordList = new ArrayList<>();
@@ -114,6 +115,7 @@ public class LearnServiceTests {
                 sections.put("sectionId",row.getSection().getId());
                 sections.put("section", i);
                 sections.put("grade", row.getSection().getGrade());
+                sections.put("progress",row.getSection().getProgress());
                 sections.put("word", wordList);
                 sectionsList.add(sections);
                 log.info("sectionsList: "+sectionsList);
@@ -136,6 +138,7 @@ public class LearnServiceTests {
             sections.put("sectionId",vocaList.get(vocaList.size() - 1).getSection().getId());
             sections.put("section", i);
             sections.put("grade", vocaList.get(vocaList.size() - 1).getSection().getGrade());
+            sections.put("progress",vocaList.get(vocaList.size() - 1).getSection().getProgress());
             sections.put("word", wordList);
             sectionsList.add(sections);
         }
@@ -279,38 +282,39 @@ public class LearnServiceTests {
             // 기본 등급 설정
             if (score >= 90) {
                 grade = "A";
+                if(section.getSenScore()>=90) grade+="+";
             } else if (score >= 80) {
                 grade = "B";
+                if(section.getSenScore()>=80) grade+="+";
             } else if (score >= 70) {
                 grade = "C";
+                if(section.getSenScore()>=70) grade+="+";
             } else if (score >= 60) {
                 grade = "D";
+                if(section.getSenScore()>=60) grade+="+";
             } else {
                 grade = "F";
             }
-
-            // + 등급 설정
-            if(section.getSenScore()!=null){
-                if (score >= 90 && section.getSenScore() >= 90) {
-                    grade += "+";
-                } else if (score >= 80 && section.getSenScore() >= 80) {
-                    grade += "+";
-                } else if (score >= 70 && section.getSenScore() >= 70) {
-                    grade += "+";
-                } else if (score >= 60 && section.getSenScore() >= 60) {
-                    grade += "+";
-                }
-            }
         }
+
+
         section.setGrade(grade);
         log.info("grade: "+section.getGrade());
+
+        //진행률
+        int progress = (
+                Optional.ofNullable(section.getEngScore()).orElse(0) +
+                        Optional.ofNullable(section.getKorScore()).orElse(0) +
+                        Optional.ofNullable(section.getSenScore()).orElse(0)
+        ) / 3;
+        section.setProgress(progress);
+
+        //섹션 저장
         sectionRepository.save(section);
 
-
+        //mistakes 필드 수정 로직
         //결과 출력용
         List<Map<String,Object>> misList = new ArrayList<>();
-
-        //mistakes 필드 수정 로직
         List<Voca> mistakesList = vocaRepository.findAllById(incorrectList);
         //빈도수 체크
         Map<Long, Integer> frequencyMap = new HashMap<>();
