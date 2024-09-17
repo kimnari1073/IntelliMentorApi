@@ -6,6 +6,8 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.domain.Section;
 import org.intelli.intellimentor.domain.Voca;
+import org.intelli.intellimentor.dto.QuizItemDTO;
+import org.intelli.intellimentor.dto.QuizRequestDTO;
 import org.intelli.intellimentor.repository.SectionRepository;
 import org.intelli.intellimentor.repository.VocaRepository;
 import org.junit.jupiter.api.Test;
@@ -198,30 +200,30 @@ public class LearnServiceTests {
     @Test
     public void testMarkQuiz(){
         //값 세팅
+        QuizRequestDTO quizRequestDTO = new QuizRequestDTO();
         Long sectionId = 5L;
-        Map<String, Object> wrappedRequest = new LinkedHashMap<>();  // 최상위 맵 생성
-        List<Map<String, Object>> requestList = new ArrayList<>();   // 리스트 생성
+        List<QuizItemDTO> requestList = new ArrayList<>();  // DTO 리스트 생성
 
         boolean flag = true;
         for (int intI = 0; intI < 2; intI++) {
             for (Long i = 0L; i < 10L; i++) {
-                Map<String, Object> addList = new LinkedHashMap<>();
+                QuizItemDTO addItem = new QuizItemDTO();
+                addItem.setId(90L + i);  // id 설정
 
-                addList.put("id", 90L + i);
                 if (flag) {
-                    addList.put("type", "e");
+                    addItem.setType("e");  // 영어일 경우
                 } else {
-                    addList.put("type", "k");
+                    addItem.setType("k");  // 한국어일 경우
                 }
-                addList.put("correct", flag);
-                requestList.add(addList);
-                flag = !flag;
+
+                addItem.setCorrect(flag);  // correct 설정
+                requestList.add(addItem);  // 리스트에 추가
+                flag = !flag;  // flag 토글
             }
         }
 
-        wrappedRequest.put("data", requestList);  // 맨 마지막에 requestList를 최상위 맵에 추가
-
-        log.info("request: "+ requestList);
+        // QuizRequestDTO에 requestList 설정
+        quizRequestDTO.setData(requestList);
 
         //로직
         Map<String, Integer> scoreMap = new LinkedHashMap<>();
@@ -230,27 +232,17 @@ public class LearnServiceTests {
         scoreMap.put("s",null);
         List<Long> incorrectList = new LinkedList<>();
 
-        for (Map<String, Object> row : requestList) {
-            String type = (String) row.get("type");
+        for (QuizItemDTO row : quizRequestDTO.getData()) {
+            String type = row.getType();
 
-            if ((boolean) row.get("correct")) {
-                switch (type) {
-                    case "e":
-                        scoreMap.put("e", scoreMap.get("e") == null ? 1 : scoreMap.get("e") + 1);
-                        break;
-                    case "k":
-                        scoreMap.put("k", scoreMap.get("k") == null ? 1 : scoreMap.get("k") + 1);
-                        break;
-                    case "s":
-                        scoreMap.put("s", scoreMap.get("s") == null ? 1 : scoreMap.get("s") + 1);
-                        break;
-                }
+            if (row.getCorrect()) {
+                scoreMap.put(type, scoreMap.get(type) == null ? 1 : scoreMap.get(type) + 1);
             } else {
-                incorrectList.add((Long) row.get("id"));
-                scoreMap.putIfAbsent((String) row.get("type"), 0);  // null인 경우 0으로 초기화
-
+                incorrectList.add(row.getId());  // 오답 리스트
+                scoreMap.putIfAbsent(type, 0);  // null 일 경우 0으로 초기화
             }
         }
+
         log.info("scoreMap: "+scoreMap);
 
 
@@ -269,13 +261,6 @@ public class LearnServiceTests {
                 scoreMap.put(entry.getKey(), score);  // 점수 업데이트
             }
         }
-//        for (Map.Entry<String, Integer> entry : scoreMap.entrySet()) {
-//            if(entry.getValue()!=null){
-//                int score = (int) ((double) entry.getValue() / section.getVocaCount() * 100);
-//
-//                scoreMap.put(entry.getKey(), score);
-//            }
-//        }
         log.info("현재 점수 scoreMap: "+scoreMap);
 
         section.setEngScore(scoreMap.getOrDefault("e", section.getEngScore()));
@@ -324,28 +309,28 @@ public class LearnServiceTests {
 
         //결과 출력용
         List<Map<String,Object>> misList = new ArrayList<>();
-        Map<String,Object> misMap = new LinkedHashMap<>();
 
         //mistakes 필드 수정 로직
         List<Voca> mistakesList = vocaRepository.findAllById(incorrectList);
+        //빈도수 체크
+        Map<Long, Integer> frequencyMap = new HashMap<>();
+        for (Long id : incorrectList) {
+            frequencyMap.put(id, frequencyMap.getOrDefault(id, 0) + 1);
+        }
+
+         //업데이트
         for (Voca row : mistakesList) {
-            int frequency = Collections.frequency(incorrectList, row.getId());  // incorrectList에서 해당 ID의 빈도수 계산
+            int frequency = frequencyMap.getOrDefault(row.getId(), 0);
             row.setMistakes(row.getMistakes() + frequency);
-            //반환용 데이터
-            misMap.put("id",row.getId());
-            misMap.put("eng",row.getEng());
-            misMap.put("kor",row.getKor());
+            // 반환용 데이터
+            Map<String, Object> misMap = new LinkedHashMap<>();
+            misMap.put("id", row.getId());
+            misMap.put("eng", row.getEng());
+            misMap.put("kor", row.getKor());
             misList.add(misMap);
         }
         vocaRepository.saveAll(mistakesList);
 
-
-        //countMap - 틀린 단어
-        //
-//        퀴즈 점수 scoreMap
-//        총 점수 section.getScore
-//                grade
-//        오답리스트 countMap
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("scoreMap",scoreMap);
         result.put("scoreEng",section.getEngScore());
@@ -353,9 +338,6 @@ public class LearnServiceTests {
         result.put("scoreSen",section.getSenScore());
         result.put("grade",section.getGrade());
         result.put("mistakes",misList);
-
-
-
         log.info(result);
 
     }

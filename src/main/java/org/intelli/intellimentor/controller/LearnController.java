@@ -3,6 +3,7 @@ package org.intelli.intellimentor.controller;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.intelli.intellimentor.dto.QuizRequestDTO;
 import org.intelli.intellimentor.service.LearnService;
 import org.intelli.intellimentor.util.JWTUtil;
 import org.springframework.http.HttpStatus;
@@ -65,16 +66,12 @@ public class LearnController {
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
-//    @GetMapping("quiz/kor/{title}/{section}")
-//    public ResponseEntity<?> getQuizKor(
-//            @RequestHeader("Authorization") String authHeader,
-//            @PathVariable("title") String title,
-//            @PathVariable("section") int section){
-//        String email = JWTUtil.JWTtoEmail(authHeader);
-//        Map<String, Object> result = learnService.getQuizKor(email,title,section);
-//        return ResponseEntity.status(HttpStatus.OK).body(result);
-//    }
-//
-//
+    @PatchMapping("/quiz/mark/{sectionId}")
+    public ResponseEntity<?> markQuiz(
+            @PathVariable("sectionId") Long sectionId,
+            @RequestBody QuizRequestDTO quizRequestDTO){
+        Map<String, Object> result = learnService.markQuiz(sectionId, quizRequestDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
 
 }

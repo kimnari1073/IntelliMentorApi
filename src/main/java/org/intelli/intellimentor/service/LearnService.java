@@ -1,6 +1,8 @@
 package org.intelli.intellimentor.service;
 
 
+import org.intelli.intellimentor.dto.QuizRequestDTO;
+
 import java.util.List;
 import java.util.Map;
 
@@ -11,5 +13,5 @@ public interface LearnService {
     void modifiyBookmark(Long titleId, List<Long>trueIdList, List<Long>falseIdList);
     Map<String, Object> getLearn(Long titleId);
     Map<String, Object> getQuiz(Long sectionId,String subject);
-//    Map<String, Object> getQuizKor(String email, String title, int section);
+    Map<String,Object> markQuiz(Long sectionId, QuizRequestDTO quizRequestDTO);
 }
