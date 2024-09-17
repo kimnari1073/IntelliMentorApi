@@ -199,24 +199,28 @@ public class LearnServiceTests {
     public void testMarkQuiz(){
         //값 세팅
         Long sectionId = 5L;
-        List<Map<String,Object>> requestList = new ArrayList<>();
+        Map<String, Object> wrappedRequest = new LinkedHashMap<>();  // 최상위 맵 생성
+        List<Map<String, Object>> requestList = new ArrayList<>();   // 리스트 생성
+
         boolean flag = true;
-        for(int intI=0;intI<2;intI++){
-            for(Long i =0L; i<10L;i++){
+        for (int intI = 0; intI < 2; intI++) {
+            for (Long i = 0L; i < 10L; i++) {
                 Map<String, Object> addList = new LinkedHashMap<>();
 
-                addList.put("id",90L+i);
-                if(flag){
-                    addList.put("type","e");
+                addList.put("id", 90L + i);
+                if (flag) {
+                    addList.put("type", "e");
+                } else {
+                    addList.put("type", "k");
                 }
-                else{
-                    addList.put("type","k");
-                }
-                addList.put("correct",true);
+                addList.put("correct", flag);
                 requestList.add(addList);
                 flag = !flag;
             }
         }
+
+        wrappedRequest.put("data", requestList);  // 맨 마지막에 requestList를 최상위 맵에 추가
+
         log.info("request: "+ requestList);
 
         //로직
@@ -232,7 +236,6 @@ public class LearnServiceTests {
             if ((boolean) row.get("correct")) {
                 switch (type) {
                     case "e":
-                        // 'eng' 값이 null이면 0으로 초기화하고 1을 증가
                         scoreMap.put("e", scoreMap.get("e") == null ? 1 : scoreMap.get("e") + 1);
                         break;
                     case "k":
@@ -251,28 +254,43 @@ public class LearnServiceTests {
         log.info("scoreMap: "+scoreMap);
 
 
+
         //점수 업데이트 (백분율)
         Section section = sectionRepository.findById(sectionId).orElseThrow();
-        for (Map.Entry<String, Integer> entry : scoreMap.entrySet()) {
-            if(entry.getValue()!=null){
-                int score = (int) ((double) entry.getValue() / section.getVocaCount() * 100);
+        Iterator<Map.Entry<String, Integer>> iterator = scoreMap.entrySet().iterator();
 
-                scoreMap.put(entry.getKey(), score);
+        while (iterator.hasNext()) {
+            Map.Entry<String, Integer> entry = iterator.next();
+
+            if (entry.getValue() == null) {
+                iterator.remove();  // null 값인 경우 해당 키 삭제
+            } else {
+                int score = (int) ((double) entry.getValue() / section.getVocaCount() * 100);
+                scoreMap.put(entry.getKey(), score);  // 점수 업데이트
             }
         }
-        section.setEngScore(scoreMap.get("e"));
-        log.info("sectionEngScore: "+section.getEngScore());
-        section.setKorScore(scoreMap.get("k"));
-        section.setSenScore(scoreMap.get("s"));
+//        for (Map.Entry<String, Integer> entry : scoreMap.entrySet()) {
+//            if(entry.getValue()!=null){
+//                int score = (int) ((double) entry.getValue() / section.getVocaCount() * 100);
+//
+//                scoreMap.put(entry.getKey(), score);
+//            }
+//        }
+        log.info("현재 점수 scoreMap: "+scoreMap);
+
+        section.setEngScore(scoreMap.getOrDefault("e", section.getEngScore()));
+        section.setKorScore(scoreMap.getOrDefault("k", section.getKorScore()));
+        section.setSenScore(scoreMap.getOrDefault("s", section.getSenScore()));
+
+        log.info("원래 점수 scoreMap: ");
 
         //grade계산
-
         String grade = null;
-        if(scoreMap.get("e")==null||scoreMap.get("k")==null){
+        if(section.getEngScore()==null||section.getKorScore()==null){
             log.info("점수 없음");
             grade = "-";
         }else{
-            int score = (scoreMap.get("e")+scoreMap.get("k"))/2;
+            int score = (section.getEngScore()+section.getKorScore())/2;
             // 기본 등급 설정
             if (score >= 90) {
                 grade = "A";
@@ -300,78 +318,45 @@ public class LearnServiceTests {
             }
         }
         section.setGrade(grade);
-
+        log.info("grade: "+section.getGrade());
         sectionRepository.save(section);
 
 
+        //결과 출력용
+        List<Map<String,Object>> misList = new ArrayList<>();
+        Map<String,Object> misMap = new LinkedHashMap<>();
+
         //mistakes 필드 수정 로직
-        Map<Long, Integer> countMap = new HashMap<>();
-        for (Long id : incorrectList) {
-            countMap.put(id, countMap.getOrDefault(id, 0) + 1);
+        List<Voca> mistakesList = vocaRepository.findAllById(incorrectList);
+        for (Voca row : mistakesList) {
+            int frequency = Collections.frequency(incorrectList, row.getId());  // incorrectList에서 해당 ID의 빈도수 계산
+            row.setMistakes(row.getMistakes() + frequency);
+            //반환용 데이터
+            misMap.put("id",row.getId());
+            misMap.put("eng",row.getEng());
+            misMap.put("kor",row.getKor());
+            misList.add(misMap);
         }
-        log.info("countMap: "+countMap);
-
-        List<Long> keyList = new ArrayList<>(countMap.keySet());
-        List<Voca> saveMistakes = vocaRepository.findAllById(keyList);
-        for(Voca row : saveMistakes){
-            row.setMistakes(row.getMistakes()+countMap.get(row.getId()));
-        }
-        vocaRepository.saveAll(saveMistakes);
+        vocaRepository.saveAll(mistakesList);
 
 
-        //sectionId=25L인 voca List
-//        List<Voca> vocaList = vocaRepository.getVocaBySectionId(sectionId);
+        //countMap - 틀린 단어
+        //
+//        퀴즈 점수 scoreMap
+//        총 점수 section.getScore
+//                grade
+//        오답리스트 countMap
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("scoreMap",scoreMap);
+        result.put("scoreEng",section.getEngScore());
+        result.put("scoreKor",section.getKorScore());
+        result.put("scoreSen",section.getSenScore());
+        result.put("grade",section.getGrade());
+        result.put("mistakes",misList);
 
-//        Set<Long> incorrectSet = new LinkedHashSet<>();
-//        List<Long> incorrectListVoca = new ArrayList<>();
-//
-//        Voca incorrectVoca = null;
-//        //eng
-//        int score = 0;
-//        for(int i = 0; i<quizList_eng.size();i++){
-//            if(quizList_eng.get(i).equals(answerList_eng.get(i))){
-//                score++;
-//            }
-//            else {
-//                incorrectSet.add(quizList_eng.get(i));
-//                incorrectListVoca.add(quizList_eng.get(i));
-//            }
-//        }
-//        List<Voca> saveListVoca = vocaRepository.findAllById(incorrectListVoca);
-//        for(Voca row:saveListVoca){
-//            row.setMistakes(row.getMistakes()+1);
-//        }
-//        vocaRepository.saveAll(saveListVoca);
-//        log.info("eng mistakes save...");
-//
-//        log.info("eng score: "+score);
-//        log.info("grade: " + ((double) score / quizList_eng.size()) * 100);
-//        log.info("incorrectSet: "+incorrectSet);
-//
-//        //kor
-//        score = 0;
-//        incorrectListVoca.clear();
-//        saveListVoca.clear();
-//        for(int i = 0; i<quizList_kor.size();i++){
-//            if(quizList_kor.get(i).equals(answerList_kor.get(i))){
-//                score++;
-//            }
-//            else {
-//                incorrectSet.add(quizList_kor.get(i));
-//                incorrectListVoca.add(quizList_kor.get(i));
-//            }
-//        }
-//        saveListVoca = vocaRepository.findAllById(incorrectListVoca);
-//        for(Voca row:saveListVoca){
-//            row.setMistakes(row.getMistakes()+1);
-//        }
-//        vocaRepository.saveAll(saveListVoca);
-//        log.info("kor mistakes save...");
-//
-//        log.info("kor score: "+score);
-//        log.info("grade: " + ((double) score / quizList_kor.size()) * 100);
-//        log.info("incorrectSet: "+incorrectSet);
-//        //sen
+
+
+        log.info(result);
 
     }
 
