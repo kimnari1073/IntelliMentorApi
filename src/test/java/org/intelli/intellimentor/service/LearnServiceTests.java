@@ -95,60 +95,41 @@ public class LearnServiceTests {
 
     }
 
-    //학습 조회
+    //학습 조회(전체)
     @Test
     public void testGetLearn(){
         //초기 데이터 세팅
-        Long titleId=1L;
+        Long titleId=2L;
 
         //로직
-        List<Voca> vocaList = vocaRepository.findByTitleIdOrderById(titleId);
-        vocaList.sort(Comparator.comparing(voca -> voca.getSection().getSection()));
-        List<Map<String, Object>> wordList = new ArrayList<>();
-        List<Map<String, Object>> sectionsList = new ArrayList<>();
+        Voca voca = vocaRepository.findFirstByTitleId(titleId);
+        List<Long> sectionIdList = vocaRepository.getSectionList(titleId);
+        Map<String,Object> resultMap = new LinkedHashMap<>();
 
-        int i=1;
-        for (Voca row : vocaList) {
-            if (row.getSection().getSection() != i) {
-                // 이전 섹션의 데이터를 sectionsList에 추가
-                Map<String, Object> sections = new LinkedHashMap<>();
-                sections.put("sectionId",row.getSection().getId());
-                sections.put("section", i);
-                sections.put("grade", row.getSection().getGrade());
-                sections.put("progress",row.getSection().getProgress());
-                sections.put("word", wordList);
-                sectionsList.add(sections);
-                log.info("sectionsList: "+sectionsList);
-                // 새로운 섹션 시작을 위해 wordList를 초기화
-                wordList = new ArrayList<>();
-                i++;
-            }
-            Map<String, Object> wordMap = new LinkedHashMap<>();
-            wordMap.put("id",row.getId());
-            wordMap.put("eng", row.getEng());
-            wordMap.put("kor", row.getKor());
-            wordMap.put("bookmark", row.isBookmark());
-            wordMap.put("mistakes", row.getMistakes());
-            wordList.add(wordMap);
-//            log.info("wordList: "+wordList);
+        List<Map<String,Object>> dataList = new LinkedList<>();
+        //3,4,5
+        for(Long sectionId:sectionIdList){
+            dataList.add(testGetSectionData(sectionId));
         }
-        // 마지막 섹션 추가
-        if (!wordList.isEmpty()) {
-            Map<String, Object> sections = new LinkedHashMap<>();
-            sections.put("sectionId",vocaList.get(vocaList.size() - 1).getSection().getId());
-            sections.put("section", i);
-            sections.put("grade", vocaList.get(vocaList.size() - 1).getSection().getGrade());
-            sections.put("progress",vocaList.get(vocaList.size() - 1).getSection().getProgress());
-            sections.put("word", wordList);
-            sectionsList.add(sections);
-        }
-        Map<String, Object> resultData = new LinkedHashMap<>();
-        resultData.put("titleId",vocaList.get(0).getTitle().getId());
-        resultData.put("title",vocaList.get(0).getTitle().getTitle());
-        resultData.put("maxSection",i);
-        resultData.put("data", sectionsList);
-        log.info(resultData);
+
+        resultMap.put("title",voca.getTitle());
+        resultMap.put("sectionMax",sectionIdList.size());
+        resultMap.put("data",dataList);
+
+        log.info(resultMap);
     }
+
+    //학습 조회(섹션별)
+    @Test
+    public void getLearnBySection(){
+        //초기 데이터 세팅
+        Long sectionId = 5L;
+
+        //로직
+        testGetSectionData(sectionId);
+
+    }
+
 
     //북마크(대시보드)
     @Test
@@ -183,7 +164,6 @@ public class LearnServiceTests {
             for (Voca row : vocaList) {
                 List<Map<String, Object>> temList = testFindChoices(vocaList, row, "e");
 
-                // 퀴즈 결과에 추가 (quizList라는 키 없이 바로 추가)
                 result.add(temList);
             }
         }
@@ -191,9 +171,11 @@ public class LearnServiceTests {
             for (Voca row : vocaList) {
                 List<Map<String, Object>> temList = testFindChoices(vocaList, row, "k");
 
-                // 퀴즈 결과에 추가 (quizList라는 키 없이 바로 추가)
                 result.add(temList);
             }
+        }
+        if(subject.contains("e")){
+
         }
 
         log.info("quiz: " + result);
@@ -392,21 +374,7 @@ public class LearnServiceTests {
             log.info("Error occurred: "+e.getMessage());
         }
     }
-//
-//    @Test
-//    public void testUpdateLearn(){
-//
-//    }
-//
-//    @Test
-//    public void testDeleteLearn(){
-//
-//    }
-//
-//    @Test
-//    public void testCreateQuiz(){
-//
-//    }
+
         private List<Map<String,Object>> testFindChoices(List<Voca> listVoca, Voca mainVoca,String type){
             List<Voca> filteredList = new ArrayList<>(listVoca); // 원본 리스트 복사
             filteredList.remove(mainVoca); //서브 필드를 위한 메인 필드 제거
@@ -431,6 +399,28 @@ public class LearnServiceTests {
             resultList.add(randomInt,Map.of("id",mainVoca.getId(),subField, type.equals("e") ? mainVoca.getKor() : mainVoca.getEng()));
 
             return resultList;
+        }
+        private Map<String,Object> testGetSectionData(Long sectionId){
+            List<Voca> vocaList = vocaRepository.findBySectionIdOrderById(sectionId);
+
+            Map<String,Object> resultMap = new LinkedHashMap<>();
+
+            List<Map<String,Object>> wordList = new LinkedList<>();
+            for(Voca row : vocaList){
+                Map<String, Object> wordMap = new LinkedHashMap<>();
+                wordMap.put("id",row.getId());
+                wordMap.put("eng", row.getEng());
+                wordMap.put("kor", row.getKor());
+                wordMap.put("bookmark", row.isBookmark());
+                wordMap.put("mistakes", row.getMistakes());
+                wordMap.put("sentence",row.getSentence());
+                wordList.add(wordMap);
+            }
+
+            resultMap.put("section",vocaList.get(0).getSection());
+            resultMap.put("wordList",wordList);
+
+            return resultMap;
         }
 
 }

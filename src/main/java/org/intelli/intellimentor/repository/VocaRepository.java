@@ -9,8 +9,20 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface VocaRepository extends JpaRepository<Voca,Long> {
+    //단어 데이터 조회(전체)
+    List<Voca> findByTitleIdOrderById(Long titleId);
+
+    //단어 데이터 조회(한 개)
+    Voca findFirstByTitleId(Long titleId);
+
+    //단어 데이터 조회(섹션별)
+    List<Voca> findBySectionIdOrderById(Long sectionId);
+
+    List<Voca> findByIdIn(List<Long> ids);
+
     //유저 단어 리스트 조회
     @Query("SELECT v.title.id, v.title.title, COUNT(v), COALESCE(MAX(s.section), 0) " +
             "FROM Voca v " +
@@ -21,8 +33,7 @@ public interface VocaRepository extends JpaRepository<Voca,Long> {
             "ORDER BY v.title.id")
     List<Object[]> getVocaList(@Param("userId")String userId);
 
-    //유저 단어 데이터 조회
-    List<Voca> findByTitleIdOrderById(Long titleId);
+
 
     //section 조회
     @Query("SELECT DISTINCT v.section.id " +
@@ -36,27 +47,6 @@ public interface VocaRepository extends JpaRepository<Voca,Long> {
     @Query("SELECT v FROM Voca v WHERE v.section.id = :sectionId")
     List<Voca> getVocaBySectionId(@Param("sectionId")Long sectionId);
 
-    // 유저 단어 데이터 조회 (특정 섹션)
-//    List<Voca> findByUserIdAndTitleAndSection(@Param("userId") String userId, @Param("title") String title, @Param("section") int section);
-
-    //섹션별 단어 리스트
-//    @Query("SELECT v FROM Voca v " +
-//            "WHERE v.userId = :userId AND v.title = :title " +
-//            "ORDER BY v.section ASC, v.bookmark DESC")
-//    List<Voca> findVocaOrderBySection(@Param("userId") String userId, @Param("title") String title);
-
-//    @Transactional
-//    @Modifying
-//    @Query("DELETE FROM Voca v " +
-//            "WHERE v.userId = :userId AND v.title = :title")
-//    void deleteVocaList(@Param("userId") String userId, @Param("title") String title);
-
-//    @Modifying
-//    @Transactional
-//    @Query("UPDATE Voca v " +
-//            "SET v.section = 0, v.bookmark = false, v.mistakes = 0 " +
-//            "WHERE v.userId = :userId AND v.title = :title")
-//    void deleteLearn(@Param("userId") String userId, @Param("title") String title);
 
 
 }
