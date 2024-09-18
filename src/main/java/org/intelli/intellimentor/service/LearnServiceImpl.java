@@ -111,6 +111,7 @@ public class LearnServiceImpl implements LearnService{
         resultMap.put("title",voca.getTitle());
         resultMap.put("sectionMax",sectionIdList.size());
         resultMap.put("data",dataList);
+        log.info(resultMap);
         return resultMap;
     }
 

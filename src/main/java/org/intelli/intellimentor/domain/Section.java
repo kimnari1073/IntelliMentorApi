@@ -2,6 +2,8 @@ package org.intelli.intellimentor.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import java.util.List;
 
 @Entity
 @Table
@@ -23,6 +25,11 @@ public class Section {
     private Integer korScore;
     private Integer senScore;
     private Integer progress;
+
+    @OneToMany(mappedBy = "section")
+    @JsonManagedReference // Jackson에서 순방향 참조를 허용
+    private List<Voca> vocas;
+
     @PrePersist
     public void prePersist() {
         if (this.grade == null || this.grade.isEmpty()) {
@@ -31,6 +38,5 @@ public class Section {
         if (this.progress == null) {
             this.progress = 0;
         }
-
     }
 }
