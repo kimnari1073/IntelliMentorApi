@@ -131,24 +131,24 @@ public class LearnServiceTests {
     }
 
 
-    //북마크(대시보드)
+    //북마크
     @Test
     public void setBookmark(){
-        Long titleId = 1L;
-        List<Long> trueIdList=new ArrayList<>();
-//        List<Long> falseIdList=new ArrayList<>();
-        trueIdList.add(1L);
-        trueIdList.add(2L);
-//        falseIdList.add(3L);
-//        falseIdList.add(4L);
-        List<Voca> vocaList1 = vocaRepository.getVocaByTitleAndIdIn(titleId,trueIdList);
-        log.info("before: "+vocaList1.get(0).isBookmark());
-        for(Voca row:vocaList1){
-            row.setBookmark(true);
-        }
-        vocaRepository.saveAll(vocaList1);
-        log.info("after: "+vocaList1.get(0).isBookmark());
+        //초기 데이터 세팅
+        Long vocaId = 10L;
 
+        //로직
+        Optional<Voca> voca = vocaRepository.findById(vocaId);
+
+        if(voca.isPresent()){
+            log.info("before: "+voca.get().isBookmark());
+            voca.get().setBookmark(!voca.get().isBookmark());
+            vocaRepository.save(voca.get());
+            log.info("after: "+voca.get().isBookmark());
+
+        }else{
+            log.info("에러");
+        }
     }
 
     //퀴즈 생성

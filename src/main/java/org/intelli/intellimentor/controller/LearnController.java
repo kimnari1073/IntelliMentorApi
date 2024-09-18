@@ -53,15 +53,12 @@ public class LearnController {
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
-    @PatchMapping("/modify/bookmark/{titleId}")
-    public ResponseEntity<?> modifyBookmark(
-            @PathVariable("titleId") Long titleId,
-            @RequestBody Map<String, List<Long>> body){
-        log.info(body.get("trueIdList"));
-        log.info(body.get("falseIdList"));
-        log.info("Request Body: " + body);
+    //북마크
+    @PatchMapping("/bookmark/{vocaId}")
+    public ResponseEntity<?> setBookmark(
+            @PathVariable("vocaId") Long vocaId){
 
-        learnService.modifiyBookmark(titleId,body.get("trueIdList"),body.get("falseIdList"));
+        learnService.setBookmark(vocaId);
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 

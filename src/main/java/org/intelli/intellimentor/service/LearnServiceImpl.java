@@ -73,24 +73,20 @@ public class LearnServiceImpl implements LearnService{
         log.info("Section Delete..");
     }
 
-    //북마크 수정
+    //북마크
     @Override
-    public void modifiyBookmark(Long titleId, List<Long> trueIdList, List<Long> falseIdList) {
-        List<Voca> vocaList1 = vocaRepository.getVocaByTitleAndIdIn(titleId,trueIdList);
-        List<Voca> vocaList2 = vocaRepository.getVocaByTitleAndIdIn(titleId,falseIdList);
-        if(!vocaList1.isEmpty()){
-            for(Voca row:vocaList1){
-                row.setBookmark(true);
-            }
-            vocaRepository.saveAll(vocaList1);
-        }
-        if(!vocaList2.isEmpty()){
-            for(Voca row:vocaList2){
-                row.setBookmark(false);
-            }
-            vocaRepository.saveAll(vocaList2);
-        }
+    public void setBookmark(Long vocaId) {
+        Optional<Voca> voca = vocaRepository.findById(vocaId);
 
+        if(voca.isPresent()){
+            log.info("before: "+voca.get().isBookmark());
+            voca.get().setBookmark(!voca.get().isBookmark());
+            vocaRepository.save(voca.get());
+            log.info("after: "+voca.get().isBookmark());
+
+        }else{
+            log.info("에러");
+        }
 
     }
 
