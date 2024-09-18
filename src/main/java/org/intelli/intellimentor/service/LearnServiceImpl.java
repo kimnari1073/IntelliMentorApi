@@ -94,7 +94,7 @@ public class LearnServiceImpl implements LearnService{
 
     }
 
-    //학습 조회
+    //학습 조회(전체)
     @Override
     @Transactional(readOnly = true)
     public Map<String, Object> getLearn(Long titleId) {
@@ -113,6 +113,12 @@ public class LearnServiceImpl implements LearnService{
         resultMap.put("data",dataList);
         log.info(resultMap);
         return resultMap;
+    }
+
+    //학습 조회(섹션)
+    @Override
+    public Map<String, Object> getLearnBySection(Long sectionId) {
+        return testGetSectionData(sectionId);
     }
 
     @Override
@@ -283,7 +289,11 @@ public class LearnServiceImpl implements LearnService{
             wordList.add(wordMap);
         }
 
-        resultMap.put("section",vocaList.get(0).getSection());
+        resultMap.put("sectionId",vocaList.get(0).getSection().getId());
+        resultMap.put("section",vocaList.get(0).getSection().getSection());
+        resultMap.put("vocaCount",vocaList.get(0).getSection().getVocaCount());
+        resultMap.put("progress",vocaList.get(0).getSection().getProgress());
+        resultMap.put("grade",vocaList.get(0).getSection().getGrade());
         resultMap.put("wordList",wordList);
 
         return resultMap;

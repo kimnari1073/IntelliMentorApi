@@ -1,5 +1,6 @@
 package org.intelli.intellimentor.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -27,7 +28,7 @@ public class Section {
     private Integer progress;
 
     @OneToMany(mappedBy = "section")
-    @JsonManagedReference // Jackson에서 순방향 참조를 허용
+    @JsonIgnore
     private List<Voca> vocas;
 
     @PrePersist

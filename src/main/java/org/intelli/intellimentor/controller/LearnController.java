@@ -38,9 +38,18 @@ public class LearnController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    //학습 조회(전체)
     @GetMapping("/read/{titleId}")
     public ResponseEntity<?> getLearn(@PathVariable("titleId") Long titleId){
         Map<String, Object> result = learnService.getLearn(titleId);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
+
+    //학습 조회(섹션)
+    @GetMapping("/read")
+    public ResponseEntity<?> getLearnBySection(@RequestParam Long sectionId
+    ){
+        Map<String, Object> result = learnService.getLearnBySection(sectionId);
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 

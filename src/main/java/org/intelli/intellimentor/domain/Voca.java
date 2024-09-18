@@ -1,5 +1,6 @@
 package org.intelli.intellimentor.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -27,12 +28,12 @@ public class Voca {
 
     @ManyToOne
     @JoinColumn(name = "title_id", nullable = false)
-    @JsonBackReference // Jackson에게 역참조 방지를 알림
+    @JsonIgnore
     private Title title;
 
     @ManyToOne
     @JoinColumn(name = "section_id")
-    @JsonBackReference // Jackson에게 역참조 방지를 알림
+    @JsonIgnore
     private Section section;
 
     @PrePersist

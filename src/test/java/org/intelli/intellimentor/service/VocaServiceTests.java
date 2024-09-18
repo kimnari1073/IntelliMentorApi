@@ -99,6 +99,45 @@ public class VocaServiceTests {
         }
         vocaRepository.saveAll(vocaList1);
         vocaRepository.saveAll(vocaList2);
+
+
+        //섹션 설정
+        Long titleId = 2L;
+        int requestSection = 3;
+
+        // 섹션 생성
+        List<Section> saveSectionList = new ArrayList<>();
+        for (int i = 1; i <= requestSection; i++) {
+            Section section = Section.builder()
+                    .section(i)
+                    .build();
+            saveSectionList.add(section);
+        }
+
+        // 섹션별 Voca 카운트 저장을 위한 배열 (각 섹션별로 카운트를 관리)
+        int[] sectionVocaCount = new int[requestSection];
+
+        // Voca 섹션 설정
+        List<Voca> vocaList = vocaRepository.findByTitleIdOrderById(titleId);
+        int i = 0;
+        for (Voca row : vocaList) {
+            // 섹션을 할당
+            Section section = saveSectionList.get(i % requestSection);
+            row.setSection(section);
+
+            // 해당 섹션의 카운트를 증가
+            sectionVocaCount[i % requestSection]++;
+
+            i++;
+        }
+
+        // 섹션별 카운트 저장
+        for (int j = 0; j < requestSection; j++) {
+            saveSectionList.get(j).setVocaCount(sectionVocaCount[j]);  // 각 섹션에 카운트 저장
+        }
+
+        sectionRepository.saveAll(saveSectionList);  // 섹션 저장
+        vocaRepository.saveAll(vocaList);  // Voca 저장
     }
     @Test
     public void testGetVocaList(){
@@ -119,6 +158,8 @@ public class VocaServiceTests {
         result.put("data",resultList);
 
         log.info(result);
+
+
     }
     @Test
     public void testGetVocaDetails(){
