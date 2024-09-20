@@ -281,7 +281,8 @@ public class LearnServiceImpl implements LearnService{
             wordMap.put("kor", row.getKor());
             wordMap.put("bookmark", row.isBookmark());
             wordMap.put("mistakes", row.getMistakes());
-            wordMap.put("sentence",row.getSentence());
+            wordMap.put("sentenceEng",row.getSentenceEng());
+            wordMap.put("sentenceKor",row.getSentenceKor());
             wordList.add(wordMap);
         }
 

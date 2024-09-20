@@ -62,6 +62,6 @@ public class MemberRepositoryTests {
 
         List<Voca> vocaList = vocaRepository.findByUserIdAndSectionIdIsNotNull(email);
 
-        
+
     }
 }

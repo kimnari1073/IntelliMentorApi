@@ -24,6 +24,8 @@ public interface VocaRepository extends JpaRepository<Voca,Long> {
     //
     List<Voca> findByUserIdAndSectionIdIsNotNull(String userId);
 
+    List<Voca> findBySectionIdAndSentenceEngIsNull(Long sectionId);
+
 
 
 

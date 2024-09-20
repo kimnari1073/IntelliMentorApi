@@ -2,6 +2,7 @@ package org.intelli.intellimentor.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.domain.Section;
 import org.intelli.intellimentor.domain.Voca;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.*;
+import org.springframework.test.annotation.Commit;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
@@ -121,13 +123,14 @@ public class LearnServiceTests {
 
     //학습 조회(섹션별)
     @Test
+    @Transactional
+    @Commit
     public void getLearnBySection(){
         //초기 데이터 세팅
         Long sectionId = 5L;
 
         //로직
         testGetSectionData(sectionId);
-
     }
 
 
@@ -333,7 +336,10 @@ public class LearnServiceTests {
     //chatGPT 연결 테스트
     @Test
     public void generateChatResponse() {
-    String prompt = "사과와 어감이 비슷하지만 의미는 다른 한글 단어3개를 알려줘";
+    String prompt = "perseverance의 뜻은 인내야. 이 단어가 들어간 영어 예문을 한 문장만 만들어줘";
+    String system = "사족 붙히지 말고 원하는 답만 알려줘.\n" +
+            "정답은 영어문장/n문장뜻 형식으로 알려줘.\n" +
+            "문장의 길이는 100자가 넘지 않게 해줘.";
         try {
             // HTTP 요청 헤더 설정
             HttpHeaders headers = new HttpHeaders();
@@ -345,7 +351,7 @@ public class LearnServiceTests {
             requestBody.put("model", "gpt-4o-mini");
             requestBody.put("messages", new Object[]{
                     // 'system' role로 모델에 기본 지침 제공
-                    Map.of("role", "system", "content", "답은 리스트 형태로 [\"정답1\",\"정답2\",\"정답3\"]과 같이 말해줘.\n"),
+                    Map.of("role", "system", "content", system),
                     // 'user' role로 실제 사용자 입력 제공
                     Map.of("role", "user", "content", prompt)
             });
@@ -362,12 +368,14 @@ public class LearnServiceTests {
             String chatResponse = jsonNode.path("choices").get(0).path("message").path("content").asText();
 
 
-            List<String> resultList = new ArrayList<>(
-                    Arrays.asList(chatResponse.replace("[", "")
-                            .replace("]", "")
-                            .split(", ")));
             log.info("chatResponse: "+chatResponse);
-            log.info("resultList: "+resultList);
+            String[] sentences = chatResponse.split("/");
+
+            String sentence1 = sentences[0].trim(); // 첫 번째 문장
+            String sentence2 = sentences[1].trim(); // 두 번째 문장
+
+            log.info("Sentence 1: " + sentence1);
+            log.info("Sentence 2: " + sentence2);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -402,10 +410,11 @@ public class LearnServiceTests {
         }
         private Map<String,Object> testGetSectionData(Long sectionId){
             List<Voca> vocaList = vocaRepository.findBySectionIdOrderById(sectionId);
-
             Map<String,Object> resultMap = new LinkedHashMap<>();
-
             List<Map<String,Object>> wordList = new LinkedList<>();
+
+            List<Voca> createSentenceList=vocaRepository.findBySectionIdAndSentenceEngIsNull(sectionId);
+            testCreateSentence(createSentenceList);
             for(Voca row : vocaList){
                 Map<String, Object> wordMap = new LinkedHashMap<>();
                 wordMap.put("id",row.getId());
@@ -413,7 +422,8 @@ public class LearnServiceTests {
                 wordMap.put("kor", row.getKor());
                 wordMap.put("bookmark", row.isBookmark());
                 wordMap.put("mistakes", row.getMistakes());
-                wordMap.put("sentence",row.getSentence());
+                wordMap.put("sentenceEng",row.getSentenceEng());
+                wordMap.put("sentenceKor",row.getSentenceKor());
                 wordList.add(wordMap);
             }
 
@@ -423,4 +433,62 @@ public class LearnServiceTests {
             return resultMap;
         }
 
+
+        @Transactional
+        @Commit
+        protected void testCreateSentence(List<Voca> createVocaList){
+            log.info("testCreateSentence");
+            String system = "사족 붙히지 말고 원하는 답만 알려줘.\n" +
+                    "정답은 영어문장/n문장뜻 형식으로 알려줘.\n" +
+                    "문장의 길이는 100자가 넘지 않게 해줘.";
+            for(Voca row:createVocaList){
+                String prompt = row.getEng()+"의 뜻은 "+row.getKor()+" 야. 이 단어가 들어간 영어 예문을 한 문장만 만들어줘";
+                log.info("prompt: "+prompt);
+                String response = testChatGPT(prompt,system);
+                String[] sentences = response.split("/");
+
+                row.setSentenceEng(sentences[0].trim());
+                row.setSentenceKor(sentences[1].trim());
+                log.info("eng: "+row.getSentenceEng());
+                log.info("kor: "+row.getSentenceKor());
+            }
+            vocaRepository.saveAllAndFlush(createVocaList);
+
+        }
+        private String testChatGPT(String prompt,String system){
+            try {
+                // HTTP 요청 헤더 설정
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.setBearerAuth(apiKey);
+
+                // 요청 본문 작성
+                Map<String, Object> requestBody = new HashMap<>();
+                requestBody.put("model", "gpt-4o-mini");
+                requestBody.put("messages", new Object[]{
+                        // 'system' role로 모델에 기본 지침 제공
+                        Map.of("role", "system", "content", system),
+                        // 'user' role로 실제 사용자 입력 제공
+                        Map.of("role", "user", "content", prompt)
+                });
+
+                HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+
+                // API 호출
+                ResponseEntity<String> responseEntity = restTemplate.exchange(API_URL, HttpMethod.POST, requestEntity, String.class);
+
+                // 응답 처리
+                String responseBody = responseEntity.getBody();
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode jsonNode = mapper.readTree(responseBody);
+                String chatResponse = jsonNode.path("choices").get(0).path("message").path("content").asText();
+
+                return chatResponse;
+            } catch (Exception e) {
+                e.printStackTrace();
+                log.info("Error occurred: "+e.getMessage());
+                return null;
+            }
+
+        }
 }

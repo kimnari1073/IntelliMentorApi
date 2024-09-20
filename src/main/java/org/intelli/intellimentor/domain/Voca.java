@@ -24,7 +24,12 @@ public class Voca {
     private String kor;
     private boolean bookmark;
     private int mistakes;
-    private String sentence;
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String sentenceEng;
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String sentenceKor;
 
     @ManyToOne
     @JoinColumn(name = "title_id", nullable = false)
