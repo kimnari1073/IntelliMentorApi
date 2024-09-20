@@ -21,6 +21,10 @@ public interface VocaRepository extends JpaRepository<Voca,Long> {
     //단어 데이터 조회(섹션별)
     List<Voca> findBySectionIdOrderById(Long sectionId);
 
+    //
+    List<Voca> findByUserIdAndSectionIdIsNotNull(String userId);
+
+
 
 
     //유저 단어 리스트 조회

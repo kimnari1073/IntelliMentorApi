@@ -3,10 +3,13 @@ package org.intelli.intellimentor.repository;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.domain.Member;
 import org.intelli.intellimentor.domain.MemberRole;
+import org.intelli.intellimentor.domain.Voca;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.List;
 
 @SpringBootTest
 @Log4j2
@@ -15,6 +18,8 @@ public class MemberRepositoryTests {
     private MemberRepository memberRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private VocaRepository vocaRepository;
 
     @Test
     public void testInsertMember(){
@@ -49,5 +54,14 @@ public class MemberRepositoryTests {
     @Test
     public void testDeleteAll(){
         memberRepository.deleteAll();
+    }
+
+    @Test
+    public void testGetHome(){
+        String email = "user1@aaa.com";
+
+        List<Voca> vocaList = vocaRepository.findByUserIdAndSectionIdIsNotNull(email);
+
+        
     }
 }
