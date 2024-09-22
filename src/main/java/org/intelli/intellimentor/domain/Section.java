@@ -39,5 +39,14 @@ public class Section {
         if (this.progress == null) {
             this.progress = 0;
         }
+        if (this.engScore == null){
+            this.engScore = 0;
+        }
+        if(this.korScore == null){
+            this.korScore = 0;
+        }
+        if(this.senScore == null){
+            this.senScore = 0;
+        }
     }
 }

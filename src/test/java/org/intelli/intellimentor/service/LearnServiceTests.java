@@ -204,7 +204,7 @@ public class LearnServiceTests {
                     addItem.setType("k");  // 한국어일 경우
                 }
 
-                addItem.setCorrect(flag);  // correct 설정
+                addItem.setCorrect(true);  // correct 설정
                 requestList.add(addItem);  // 리스트에 추가
                 flag = !flag;  // flag 토글
             }
@@ -237,46 +237,33 @@ public class LearnServiceTests {
 
         //점수 업데이트 (백분율)
         Section section = sectionRepository.findById(sectionId).orElseThrow();
-        Iterator<Map.Entry<String, Integer>> iterator = scoreMap.entrySet().iterator();
 
-        while (iterator.hasNext()) {
-            Map.Entry<String, Integer> entry = iterator.next();
-
-            if (entry.getValue() == null) {
-                iterator.remove();  // null 값인 경우 해당 키 삭제
-            } else {
-                int score = (int) ((double) entry.getValue() / section.getVocaCount() * 100);
-                scoreMap.put(entry.getKey(), score);  // 점수 업데이트
-            }
-        }
-        log.info("현재 점수 scoreMap: "+scoreMap);
+        scoreMap.entrySet().removeIf(entry -> entry.getValue() == null);// null 값인 경우 해당 키 삭제
 
         section.setEngScore(scoreMap.getOrDefault("e", section.getEngScore()));
         section.setKorScore(scoreMap.getOrDefault("k", section.getKorScore()));
         section.setSenScore(scoreMap.getOrDefault("s", section.getSenScore()));
 
-        log.info("원래 점수 scoreMap: ");
-
         //grade계산
         String grade = null;
         if(section.getEngScore()==null||section.getKorScore()==null){
-            log.info("점수 없음");
             grade = "-";
         }else{
             int score = (section.getEngScore()+section.getKorScore())/2;
+            int vocaCount = section.getVocaCount();
             // 기본 등급 설정
-            if (score >= 90) {
+            if (score >= vocaCount*0.9) {
                 grade = "A";
-                if(section.getSenScore()>=90) grade+="+";
-            } else if (score >= 80) {
+                if(section.getSenScore()>=vocaCount*0.9) grade+="+";
+            } else if (score >= vocaCount*0.8) {
                 grade = "B";
-                if(section.getSenScore()>=80) grade+="+";
-            } else if (score >= 70) {
+                if(section.getSenScore()>=vocaCount*0.8) grade+="+";
+            } else if (score >= vocaCount*0.7) {
                 grade = "C";
-                if(section.getSenScore()>=70) grade+="+";
-            } else if (score >= 60) {
+                if(section.getSenScore()>=vocaCount*0.7) grade+="+";
+            } else if (score >= vocaCount*0.6) {
                 grade = "D";
-                if(section.getSenScore()>=60) grade+="+";
+                if(section.getSenScore()>=vocaCount*0.96) grade+="+";
             } else {
                 grade = "F";
             }
@@ -287,12 +274,12 @@ public class LearnServiceTests {
         log.info("grade: "+section.getGrade());
 
         //진행률
-        int progress = (
-                Optional.ofNullable(section.getEngScore()).orElse(0) +
-                        Optional.ofNullable(section.getKorScore()).orElse(0) +
-                        Optional.ofNullable(section.getSenScore()).orElse(0)
-        ) / 3;
-        section.setProgress(progress);
+        int progress = Optional.ofNullable(section.getEngScore()).orElse(0) +
+                Optional.ofNullable(section.getKorScore()).orElse(0) +
+                Optional.ofNullable(section.getSenScore()).orElse(0);
+
+        // `section.getProgress()` 값과 `progress`를 비교하여 더 큰 값을 설정
+        section.setProgress(Math.max(progress, Optional.ofNullable(section.getProgress()).orElse(0)));
 
         //섹션 저장
         sectionRepository.save(section);

@@ -159,17 +159,8 @@ public class LearnServiceImpl implements LearnService{
 
         //점수 업데이트 (백분율)
         Section section = sectionRepository.findById(sectionId).orElseThrow();
-        Iterator<Map.Entry<String, Integer>> iterator = scoreMap.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<String, Integer> entry = iterator.next();
 
-            if (entry.getValue() == null) {
-                iterator.remove();  // null 값인 경우 해당 키 삭제
-            } else {
-                int score = (int) ((double) entry.getValue() / section.getVocaCount() * 100);
-                scoreMap.put(entry.getKey(), score);  // 점수 업데이트
-            }
-        }
+        scoreMap.entrySet().removeIf(entry -> entry.getValue() == null);// null 값인 경우 해당 키 삭제
         section.setEngScore(scoreMap.getOrDefault("e", section.getEngScore()));
         section.setKorScore(scoreMap.getOrDefault("k", section.getKorScore()));
         section.setSenScore(scoreMap.getOrDefault("s", section.getSenScore()));
@@ -180,19 +171,20 @@ public class LearnServiceImpl implements LearnService{
             grade = "-";
         }else{
             int score = (section.getEngScore()+section.getKorScore())/2;
+            int vocaCount = section.getVocaCount();
             // 기본 등급 설정
-            if (score >= 90) {
+            if (score >= vocaCount*0.9) {
                 grade = "A";
-                if(section.getSenScore()>=90) grade+="+";
-            } else if (score >= 80) {
+                if(section.getSenScore()>=vocaCount*0.9) grade+="+";
+            } else if (score >= vocaCount*0.8) {
                 grade = "B";
-                if(section.getSenScore()>=80) grade+="+";
-            } else if (score >= 70) {
+                if(section.getSenScore()>=vocaCount*0.8) grade+="+";
+            } else if (score >= vocaCount*0.7) {
                 grade = "C";
-                if(section.getSenScore()>=70) grade+="+";
-            } else if (score >= 60) {
+                if(section.getSenScore()>=vocaCount*0.7) grade+="+";
+            } else if (score >= vocaCount*0.6) {
                 grade = "D";
-                if(section.getSenScore()>=60) grade+="+";
+                if(section.getSenScore()>=vocaCount*0.96) grade+="+";
             } else {
                 grade = "F";
             }
@@ -200,12 +192,12 @@ public class LearnServiceImpl implements LearnService{
         section.setGrade(grade);
 
         //진행률
-        int progress = (
-                Optional.ofNullable(section.getEngScore()).orElse(0) +
-                        Optional.ofNullable(section.getKorScore()).orElse(0) +
-                        Optional.ofNullable(section.getSenScore()).orElse(0)
-        ) / 3;
-        section.setProgress(progress);
+        int progress = Optional.ofNullable(section.getEngScore()).orElse(0) +
+                Optional.ofNullable(section.getKorScore()).orElse(0) +
+                Optional.ofNullable(section.getSenScore()).orElse(0);
+        section.setProgress(Math.max(progress, Optional.ofNullable(section.getProgress()).orElse(0)));
+
+        //섹션 저장
         sectionRepository.save(section);
 
         //결과 출력용
