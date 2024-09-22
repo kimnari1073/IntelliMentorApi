@@ -140,30 +140,30 @@ public class LearnServiceImpl implements LearnService{
    //퀴즈 채점
     @Override
     public Map<String, Object> markQuiz(Long sectionId, QuizRequestDTO quizRequestDTO) {
-        Map<String, Integer> scoreMap = new LinkedHashMap<>();
-        scoreMap.put("e",null);
-        scoreMap.put("k",null);
-        scoreMap.put("s",null);
+        Map<String, Integer> countMap = new LinkedHashMap<>();
+        countMap.put("e",null);
+        countMap.put("k",null);
+        countMap.put("s",null);
         List<Long> incorrectList = new LinkedList<>();
 
         for (QuizItemDTO row : quizRequestDTO.getData()) {
             String type = row.getType();
 
             if (row.getCorrect()) {
-                scoreMap.put(type, scoreMap.get(type) == null ? 1 : scoreMap.get(type) + 1);
+                countMap.put(type, countMap.get(type) == null ? 1 : countMap.get(type) + 1);
             } else {
                 incorrectList.add(row.getId());  // 오답 리스트
-                scoreMap.putIfAbsent(type, 0);  // null 일 경우 0으로 초기화
+                countMap.putIfAbsent(type, 0);  // null 일 경우 0으로 초기화
             }
         }
 
         //점수 업데이트 (백분율)
         Section section = sectionRepository.findById(sectionId).orElseThrow();
 
-        scoreMap.entrySet().removeIf(entry -> entry.getValue() == null);// null 값인 경우 해당 키 삭제
-        section.setEngScore(scoreMap.getOrDefault("e", section.getEngScore()));
-        section.setKorScore(scoreMap.getOrDefault("k", section.getKorScore()));
-        section.setSenScore(scoreMap.getOrDefault("s", section.getSenScore()));
+        countMap.entrySet().removeIf(entry -> entry.getValue() == null);// null 값인 경우 해당 키 삭제
+        section.setEngScore(countMap.getOrDefault("e", section.getEngScore()));
+        section.setKorScore(countMap.getOrDefault("k", section.getKorScore()));
+        section.setSenScore(countMap.getOrDefault("s", section.getSenScore()));
 
         //grade계산
         String grade = null;
@@ -225,10 +225,22 @@ public class LearnServiceImpl implements LearnService{
         vocaRepository.saveAll(mistakesList);
 
         Map<String, Object> result = new LinkedHashMap<>();
+        Map<String, Integer> scoreMap = new LinkedHashMap<>();
+        for (Map.Entry<String, Integer> entry : countMap.entrySet()) {
+            String type = entry.getKey();
+            Integer count = entry.getValue();
+            int score = (int) (((double) count / section.getVocaCount()) * 100);
+            scoreMap.put(type,score);
+        }
+        result.put("countMap",countMap);
         result.put("scoreMap",scoreMap);
-        result.put("scoreEng",section.getEngScore());
-        result.put("scoreKor",section.getKorScore());
-        result.put("scoreSen",section.getSenScore());
+        result.put("vocaCount",section.getVocaCount());
+        result.put("countEng",section.getEngScore());
+        result.put("countKor",section.getKorScore());
+        result.put("countSen",section.getSenScore());
+        result.put("scoreEng",(int)((double)section.getEngScore()/section.getVocaCount())*100);
+        result.put("scoreKor",(int)((double)section.getKorScore()/section.getVocaCount())*100);
+        result.put("scoreSen",(int)((double)section.getSenScore()/section.getVocaCount())*100);
         result.put("grade",section.getGrade());
         result.put("mistakes",misList);
 
