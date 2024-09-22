@@ -238,9 +238,9 @@ public class LearnServiceImpl implements LearnService{
         result.put("countEng",section.getEngScore());
         result.put("countKor",section.getKorScore());
         result.put("countSen",section.getSenScore());
-        result.put("scoreEng",(int)((double)section.getEngScore()/section.getVocaCount())*100);
-        result.put("scoreKor",(int)((double)section.getKorScore()/section.getVocaCount())*100);
-        result.put("scoreSen",(int)((double)section.getSenScore()/section.getVocaCount())*100);
+        result.put("scoreEng",(int) (((double) section.getEngScore() / section.getVocaCount()) * 100));
+        result.put("scoreKor",(int) (((double) section.getKorScore() / section.getVocaCount()) * 100));
+        result.put("scoreSen",(int) (((double) section.getSenScore() / section.getVocaCount()) * 100));
         result.put("grade",section.getGrade());
         result.put("mistakes",misList);
 
