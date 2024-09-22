@@ -177,7 +177,7 @@ public class LearnServiceTests {
                 result.add(temList);
             }
         }
-        if(subject.contains("e")){
+        if(subject.contains("s")){
 
         }
 
@@ -308,22 +308,13 @@ public class LearnServiceTests {
         vocaRepository.saveAll(mistakesList);
 
         Map<String, Object> result = new LinkedHashMap<>();
-        Map<String, Integer> scoreMap = new LinkedHashMap<>();
-        for (Map.Entry<String, Integer> entry : countMap.entrySet()) {
-            String type = entry.getKey();
-            Integer count = entry.getValue();
-            int score = (int) (((double) count / section.getVocaCount()) * 100);
-            scoreMap.put(type,score);
-        }
+
         result.put("countMap",countMap);
-        result.put("scoreMap",scoreMap);
         result.put("vocaCount",section.getVocaCount());
         result.put("countEng",section.getEngScore());
         result.put("countKor",section.getKorScore());
         result.put("countSen",section.getSenScore());
-        result.put("scoreEng",(int) (((double) section.getEngScore() / section.getVocaCount()) * 100));
-        result.put("scoreKor",(int) (((double) section.getKorScore() / section.getVocaCount()) * 100));
-        result.put("scoreSen",(int) (((double) section.getSenScore() / section.getVocaCount()) * 100));
+        result.put("progress",section.getProgress());
         result.put("grade",section.getGrade());
         result.put("mistakes",misList);
         log.info(result);

@@ -235,22 +235,13 @@ public class LearnServiceImpl implements LearnService{
         vocaRepository.saveAll(mistakesList);
 
         Map<String, Object> result = new LinkedHashMap<>();
-        Map<String, Integer> scoreMap = new LinkedHashMap<>();
-        for (Map.Entry<String, Integer> entry : countMap.entrySet()) {
-            String type = entry.getKey();
-            Integer count = entry.getValue();
-            int score = (int) (((double) count / section.getVocaCount()) * 100);
-            scoreMap.put(type,score);
-        }
+
         result.put("countMap",countMap);
-        result.put("scoreMap",scoreMap);
         result.put("vocaCount",section.getVocaCount());
         result.put("countEng",section.getEngScore());
         result.put("countKor",section.getKorScore());
         result.put("countSen",section.getSenScore());
-        result.put("scoreEng",(int) (((double) section.getEngScore() / section.getVocaCount()) * 100));
-        result.put("scoreKor",(int) (((double) section.getKorScore() / section.getVocaCount()) * 100));
-        result.put("scoreSen",(int) (((double) section.getSenScore() / section.getVocaCount()) * 100));
+        result.put("progress",section.getProgress());
         result.put("grade",section.getGrade());
         result.put("mistakes",misList);
 
@@ -307,7 +298,7 @@ public class LearnServiceImpl implements LearnService{
         return resultMap;
     }
     @Transactional
-    protected void createSentence(List<Voca> createVocaList){
+    public void createSentence(List<Voca> createVocaList){
         String system = "사족 붙히지 말고 원하는 답만 알려줘.\n" +
                 "정답은 영어문장/문장의뜻 형식으로 알려줘.\n" +
                 "문장의 길이는 100자가 넘지 않게 해줘.";
