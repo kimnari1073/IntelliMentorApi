@@ -1,5 +1,7 @@
 package org.intelli.intellimentor.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.domain.Section;
@@ -8,8 +10,11 @@ import org.intelli.intellimentor.dto.QuizItemDTO;
 import org.intelli.intellimentor.dto.QuizRequestDTO;
 import org.intelli.intellimentor.repository.SectionRepository;
 import org.intelli.intellimentor.repository.VocaRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
@@ -20,6 +25,10 @@ import java.util.*;
 public class LearnServiceImpl implements LearnService{
     private final VocaRepository vocaRepository;
     private final SectionRepository sectionRepository;
+    private final String API_URL = "https://api.openai.com/v1/chat/completions";
+    private final RestTemplate restTemplate = new RestTemplate();
+    @Value("${openai.api.key}")
+    private String apiKey;
 
     //섹션 설정
     @Override
@@ -101,7 +110,7 @@ public class LearnServiceImpl implements LearnService{
         List<Map<String,Object>> dataList = new LinkedList<>();
 
         for(Long sectionId:sectionIdList){
-            dataList.add(testGetSectionData(sectionId));
+            dataList.add(getSectionData(sectionId));
         }
 
         resultMap.put("title",voca.getTitle());
@@ -114,9 +123,10 @@ public class LearnServiceImpl implements LearnService{
     //학습 조회(섹션)
     @Override
     public Map<String, Object> getLearnBySection(Long sectionId) {
-        return testGetSectionData(sectionId);
+        return getSectionData(sectionId);
     }
 
+    //퀴즈 생성
     @Override
     public Map<String, Object> getQuiz(Long sectionId,String subject) {
         List<Voca> vocaList = vocaRepository.getVocaBySectionId(sectionId);
@@ -272,12 +282,13 @@ public class LearnServiceImpl implements LearnService{
 
         return resultList;
     }
-    private Map<String,Object> testGetSectionData(Long sectionId){
+    private Map<String,Object> getSectionData(Long sectionId){
         List<Voca> vocaList = vocaRepository.findBySectionIdOrderById(sectionId);
-
         Map<String,Object> resultMap = new LinkedHashMap<>();
-
         List<Map<String,Object>> wordList = new LinkedList<>();
+
+        List<Voca> createSentenceList=vocaRepository.findBySectionIdAndSentenceEngIsNull(sectionId);
+        createSentence(createSentenceList);
         for(Voca row : vocaList){
             Map<String, Object> wordMap = new LinkedHashMap<>();
             wordMap.put("id",row.getId());
@@ -290,14 +301,64 @@ public class LearnServiceImpl implements LearnService{
             wordList.add(wordMap);
         }
 
-        resultMap.put("sectionId",vocaList.get(0).getSection().getId());
-        resultMap.put("section",vocaList.get(0).getSection().getSection());
-        resultMap.put("vocaCount",vocaList.get(0).getSection().getVocaCount());
-        resultMap.put("progress",vocaList.get(0).getSection().getProgress());
-        resultMap.put("grade",vocaList.get(0).getSection().getGrade());
+        resultMap.put("section",vocaList.get(0).getSection());
         resultMap.put("wordList",wordList);
 
         return resultMap;
+    }
+    @Transactional
+    protected void createSentence(List<Voca> createVocaList){
+        String system = "사족 붙히지 말고 원하는 답만 알려줘.\n" +
+                "정답은 영어문장/문장의뜻 형식으로 알려줘.\n" +
+                "문장의 길이는 100자가 넘지 않게 해줘.";
+        for(Voca row:createVocaList){
+            String prompt = row.getEng()+"의 뜻은 "+row.getKor()+" 야. 이 단어가 들어간 영어 예문을 한 문장만 만들어줘";
+            String response = getChatGPT(prompt,system);
+            String[] sentences = response.split("/");
+
+            row.setSentenceEng(sentences[0].trim());
+            row.setSentenceKor(sentences[1].trim());
+            log.info("eng: "+row.getSentenceEng());
+            log.info("kor: "+row.getSentenceKor());
+        }
+        vocaRepository.saveAllAndFlush(createVocaList);
+
+    }
+    private String getChatGPT(String prompt,String system){
+        try {
+            // HTTP 요청 헤더 설정
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(apiKey);
+
+            // 요청 본문 작성
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("model", "gpt-4o-mini");
+            requestBody.put("messages", new Object[]{
+                    // 'system' role로 모델에 기본 지침 제공
+                    Map.of("role", "system", "content", system),
+                    // 'user' role로 실제 사용자 입력 제공
+                    Map.of("role", "user", "content", prompt)
+            });
+
+            HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+
+            // API 호출
+            ResponseEntity<String> responseEntity = restTemplate.exchange(API_URL, HttpMethod.POST, requestEntity, String.class);
+
+            // 응답 처리
+            String responseBody = responseEntity.getBody();
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode jsonNode = mapper.readTree(responseBody);
+            String chatResponse = jsonNode.path("choices").get(0).path("message").path("content").asText();
+
+            return chatResponse;
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.info("Error occurred: "+e.getMessage());
+            return null;
+        }
+
     }
 
 }

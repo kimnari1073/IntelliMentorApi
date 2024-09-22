@@ -438,11 +438,10 @@ public class LearnServiceTests {
         protected void testCreateSentence(List<Voca> createVocaList){
             log.info("testCreateSentence");
             String system = "사족 붙히지 말고 원하는 답만 알려줘.\n" +
-                    "정답은 영어문장/n문장뜻 형식으로 알려줘.\n" +
+                    "정답은 영어문장/문장의뜻 형식으로 알려줘.\n" +
                     "문장의 길이는 100자가 넘지 않게 해줘.";
             for(Voca row:createVocaList){
                 String prompt = row.getEng()+"의 뜻은 "+row.getKor()+" 야. 이 단어가 들어간 영어 예문을 한 문장만 만들어줘";
-                log.info("prompt: "+prompt);
                 String response = testChatGPT(prompt,system);
                 String[] sentences = response.split("/");
 
