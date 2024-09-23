@@ -8,8 +8,9 @@ import org.intelli.intellimentor.domain.Section;
 import org.intelli.intellimentor.domain.Voca;
 import org.intelli.intellimentor.dto.QuizItemDTO;
 import org.intelli.intellimentor.dto.QuizRequestDTO;
-import org.intelli.intellimentor.dto.VocaItemDTO;
-import org.intelli.intellimentor.dto.VocaSectionDTO;
+import org.intelli.intellimentor.dto.Voca.VocaAllDTO;
+import org.intelli.intellimentor.dto.Voca.VocaItemDTO;
+import org.intelli.intellimentor.dto.Voca.VocaSectionDTO;
 import org.intelli.intellimentor.repository.SectionRepository;
 import org.intelli.intellimentor.repository.VocaRepository;
 import org.junit.jupiter.api.Test;
@@ -105,26 +106,41 @@ public class LearnServiceTests {
     @Commit
     public void testGetLearn(){
         //초기 데이터 세팅
-        Long titleId=1L;
+        Long titleId=2L;
 
         //로직
-//        vocaRepository.getSectionList(titleId);
-//        Voca voca = vocaRepository.findFirstByTitleId(titleId);
+        Voca voca = vocaRepository.findFirstByTitleId(titleId);
         List<Long> sectionIdList = vocaRepository.getSectionList(titleId); //3,4,5
+        VocaAllDTO vocaAllDTO = new VocaAllDTO();
+        List<VocaSectionDTO> sectionList = new LinkedList<>();
 
-//        Map<String,List<VocaItemDTO>> resultMap = new LinkedHashMap<>();
-//
-//        List<List<VocaItemDTO>> dataList = new LinkedList<>();
-//        //3,4,5
-//        for(Long sectionId:sectionIdList){
-////            dataList.add(testGetSectionData(sectionId));
-//        }
-//
-////        resultMap.put("title",voca.getTitle());
-////        resultMap.put("sectionMax",sectionIdList.size());
-////        resultMap.put("data",dataList);
-//
-//        log.info(dataList);
+        for(Long sectionId : sectionIdList){
+            List<Voca> vocaList = vocaRepository.findBySectionIdOrderById(sectionId);
+            VocaSectionDTO vocaSectionDTO = new VocaSectionDTO();
+            List<VocaItemDTO> wordList = new LinkedList<>();
+            for(Voca row : vocaList){
+                VocaItemDTO vocaItemDTO = new VocaItemDTO();
+                vocaItemDTO.setId(row.getId());
+                vocaItemDTO.setEng(row.getEng());
+                vocaItemDTO.setKor(row.getKor());
+                vocaItemDTO.setBookmark(row.isBookmark());
+                vocaItemDTO.setMistakes(row.getMistakes());
+                wordList.add(vocaItemDTO);
+            }
+            vocaSectionDTO.setVocaItemDTOS(wordList);
+            Section section = sectionRepository.findById(sectionId).orElseThrow();
+
+            vocaSectionDTO.setSectionId(section.getId());
+            vocaSectionDTO.setSection(section.getSection());
+            vocaSectionDTO.setProgress(section.getProgress());
+            vocaSectionDTO.setGrade(section.getGrade());
+            sectionList.add(vocaSectionDTO);
+        }
+        vocaAllDTO.setTitleId(titleId);
+        vocaAllDTO.setTitle(voca.getTitle().getTitle());
+        vocaAllDTO.setVocaSectionDTOs(sectionList);
+        log.info(vocaAllDTO);
+
     }
 
     //학습하기
@@ -136,7 +152,36 @@ public class LearnServiceTests {
         Long sectionId = 5L;
 
         //로직
-        VocaSectionDTO vocaSectionDTO = testGetSectionData(sectionId);
+        List<Voca> vocaList = vocaRepository.findBySectionIdOrderById(sectionId);
+        VocaSectionDTO vocaSectionDTO = new VocaSectionDTO();
+        List<VocaItemDTO> wordList = new LinkedList<>();
+        List<Voca> createSentenceList=new ArrayList<>();
+
+        //문장 생성 레코드 필터링
+        for(Voca row: vocaList){
+            if(row.getSentenceEng()==null || row.getSentenceKor()==null){
+                createSentenceList.add(row);
+            }
+        }
+        //문장 생성
+        if(!createSentenceList.isEmpty()){
+            testCreateSentence(createSentenceList);
+        }
+
+        //데이터 출력
+        for(Voca row : vocaList){
+            VocaItemDTO vocaItemDTO = new VocaItemDTO();
+            vocaItemDTO.setId(row.getId());
+            vocaItemDTO.setEng(row.getEng());
+            vocaItemDTO.setKor(row.getKor());
+            vocaItemDTO.setBookmark(row.isBookmark());
+            vocaItemDTO.setMistakes(row.getMistakes());
+            vocaItemDTO.setSentenceEng(row.getSentenceEng());
+            vocaItemDTO.setSentenceKor(row.getSentenceKor());
+            wordList.add(vocaItemDTO);
+        }
+        vocaSectionDTO.setVocaItemDTOS(wordList);
+
         Section section = sectionRepository.findById(sectionId).orElseThrow();
 
         vocaSectionDTO.setSectionId(section.getId());
@@ -411,41 +456,6 @@ public class LearnServiceTests {
 
             return resultList;
         }
-        private VocaSectionDTO testGetSectionData(Long sectionId){
-            List<Voca> vocaList = vocaRepository.findBySectionIdOrderById(sectionId);
-            VocaSectionDTO vocaSectionDTO = new VocaSectionDTO();
-            List<VocaItemDTO> wordList = new LinkedList<>();
-            List<Voca> createSentenceList=new ArrayList<>();
-
-            //문장 생성 레코드 필터링
-            for(Voca row: vocaList){
-                if(row.getSentenceEng()==null || row.getSentenceKor()==null){
-                    createSentenceList.add(row);
-                }
-            }
-            //문장 생성
-            if(!createSentenceList.isEmpty()){
-                testCreateSentence(createSentenceList);
-            }
-
-            //데이터 출력
-            for(Voca row : vocaList){
-                VocaItemDTO vocaItemDTO = new VocaItemDTO();
-                vocaItemDTO.setId(row.getId());
-                vocaItemDTO.setEng(row.getEng());
-                vocaItemDTO.setKor(row.getKor());
-                vocaItemDTO.setBookmark(row.isBookmark());
-                vocaItemDTO.setMistakes(row.getMistakes());
-                vocaItemDTO.setSentenceEng(row.getSentenceEng());
-                vocaItemDTO.setSentenceKor(row.getSentenceKor());
-                wordList.add(vocaItemDTO);
-            }
-
-
-            vocaSectionDTO.setVocaItemDTOS(wordList);
-            return vocaSectionDTO;
-        }
-
 
         @Transactional
         @Commit

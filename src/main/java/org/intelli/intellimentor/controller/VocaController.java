@@ -2,8 +2,8 @@ package org.intelli.intellimentor.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.intelli.intellimentor.dto.VocaDTO;
-import org.intelli.intellimentor.dto.VocaUpdateDTO;
+import org.intelli.intellimentor.dto.Voca.VocaDTO;
+import org.intelli.intellimentor.dto.Voca.VocaUpdateDTO;
 import org.intelli.intellimentor.service.VocaService;
 import org.intelli.intellimentor.util.JWTUtil;
 import org.springframework.http.HttpStatus;

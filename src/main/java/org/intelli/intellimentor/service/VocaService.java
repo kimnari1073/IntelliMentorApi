@@ -1,7 +1,7 @@
 package org.intelli.intellimentor.service;
 
-import org.intelli.intellimentor.dto.VocaDTO;
-import org.intelli.intellimentor.dto.VocaUpdateDTO;
+import org.intelli.intellimentor.dto.Voca.VocaDTO;
+import org.intelli.intellimentor.dto.Voca.VocaUpdateDTO;
 
 import java.util.Map;
 

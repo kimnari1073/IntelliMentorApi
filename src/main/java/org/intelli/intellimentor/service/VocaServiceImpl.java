@@ -3,17 +3,16 @@ package org.intelli.intellimentor.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.domain.Title;
-import org.intelli.intellimentor.dto.VocaUpdateDTO;
+import org.intelli.intellimentor.dto.Voca.VocaUpdateDTO;
 import org.intelli.intellimentor.repository.SectionRepository;
 import org.intelli.intellimentor.repository.TitleRepository;
 import org.intelli.intellimentor.domain.Voca;
-import org.intelli.intellimentor.dto.VocaDTO;
+import org.intelli.intellimentor.dto.Voca.VocaDTO;
 import org.intelli.intellimentor.repository.VocaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional

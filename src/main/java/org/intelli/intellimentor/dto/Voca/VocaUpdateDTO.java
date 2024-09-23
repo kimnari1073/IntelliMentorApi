@@ -1,4 +1,4 @@
-package org.intelli.intellimentor.dto;
+package org.intelli.intellimentor.dto.Voca;
 
 import lombok.Data;
 import org.intelli.intellimentor.domain.Voca;

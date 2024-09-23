@@ -4,7 +4,7 @@ import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.domain.Section;
 import org.intelli.intellimentor.domain.Title;
 import org.intelli.intellimentor.domain.Voca;
-import org.intelli.intellimentor.dto.VocaUpdateDTO;
+import org.intelli.intellimentor.dto.Voca.VocaUpdateDTO;
 import org.intelli.intellimentor.repository.SectionRepository;
 import org.intelli.intellimentor.repository.TitleRepository;
 import org.intelli.intellimentor.repository.VocaRepository;
@@ -13,9 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Log4j2

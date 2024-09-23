@@ -8,8 +8,9 @@ import org.intelli.intellimentor.domain.Section;
 import org.intelli.intellimentor.domain.Voca;
 import org.intelli.intellimentor.dto.QuizItemDTO;
 import org.intelli.intellimentor.dto.QuizRequestDTO;
-import org.intelli.intellimentor.dto.VocaItemDTO;
-import org.intelli.intellimentor.dto.VocaSectionDTO;
+import org.intelli.intellimentor.dto.Voca.VocaAllDTO;
+import org.intelli.intellimentor.dto.Voca.VocaItemDTO;
+import org.intelli.intellimentor.dto.Voca.VocaSectionDTO;
 import org.intelli.intellimentor.repository.SectionRepository;
 import org.intelli.intellimentor.repository.VocaRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -104,28 +105,73 @@ public class LearnServiceImpl implements LearnService{
     //학습 조회(전체)
     @Override
     @Transactional(readOnly = true)
-    public Map<String, Object> getLearn(Long titleId) {
+    public VocaAllDTO getLearn(Long titleId) {
         Voca voca = vocaRepository.findFirstByTitleId(titleId);
-        List<Long> sectionIdList = vocaRepository.getSectionList(titleId);
-        Map<String,Object> resultMap = new LinkedHashMap<>();
+        List<Long> sectionIdList = vocaRepository.getSectionList(titleId); //3,4,5
+        VocaAllDTO vocaAllDTO = new VocaAllDTO();
+        List<VocaSectionDTO> sectionList = new LinkedList<>();
 
-        List<Map<String,Object>> dataList = new LinkedList<>();
+        for(Long sectionId : sectionIdList){
+            List<Voca> vocaList = vocaRepository.findBySectionIdOrderById(sectionId);
+            VocaSectionDTO vocaSectionDTO = new VocaSectionDTO();
+            List<VocaItemDTO> wordList = new LinkedList<>();
+            for(Voca row : vocaList){
+                VocaItemDTO vocaItemDTO = new VocaItemDTO();
+                vocaItemDTO.setId(row.getId());
+                vocaItemDTO.setEng(row.getEng());
+                vocaItemDTO.setKor(row.getKor());
+                vocaItemDTO.setBookmark(row.isBookmark());
+                vocaItemDTO.setMistakes(row.getMistakes());
+                wordList.add(vocaItemDTO);
+            }
+            vocaSectionDTO.setVocaItemDTOS(wordList);
+            Section section = sectionRepository.findById(sectionId).orElseThrow();
 
-        for(Long sectionId:sectionIdList){
-//            dataList.add(getSectionData(sectionId));
+            vocaSectionDTO.setSectionId(section.getId());
+            vocaSectionDTO.setSection(section.getSection());
+            vocaSectionDTO.setProgress(section.getProgress());
+            vocaSectionDTO.setGrade(section.getGrade());
+            sectionList.add(vocaSectionDTO);
         }
-
-        resultMap.put("title",voca.getTitle());
-        resultMap.put("sectionMax",sectionIdList.size());
-        resultMap.put("data",dataList);
-        log.info(resultMap);
-        return resultMap;
+        vocaAllDTO.setTitleId(titleId);
+        vocaAllDTO.setTitle(voca.getTitle().getTitle());
+        vocaAllDTO.setVocaSectionDTOs(sectionList);
+        return vocaAllDTO;
     }
 
     //학습 조회(섹션)
     @Override
     public VocaSectionDTO getLearnBySection(Long sectionId) {
-        VocaSectionDTO vocaSectionDTO = getSectionData(sectionId);
+        List<Voca> vocaList = vocaRepository.findBySectionIdOrderById(sectionId);
+        VocaSectionDTO vocaSectionDTO = new VocaSectionDTO();
+        List<VocaItemDTO> wordList = new LinkedList<>();
+        List<Voca> createSentenceList=new ArrayList<>();
+
+        //문장 생성 레코드 필터링
+        for(Voca row: vocaList){
+            if(row.getSentenceEng()==null || row.getSentenceKor()==null){
+                createSentenceList.add(row);
+            }
+        }
+        //문장 생성
+        if(!createSentenceList.isEmpty()){
+            createSentence(createSentenceList);
+        }
+
+        //데이터 출력
+        for(Voca row : vocaList){
+            VocaItemDTO vocaItemDTO = new VocaItemDTO();
+            vocaItemDTO.setId(row.getId());
+            vocaItemDTO.setEng(row.getEng());
+            vocaItemDTO.setKor(row.getKor());
+            vocaItemDTO.setBookmark(row.isBookmark());
+            vocaItemDTO.setMistakes(row.getMistakes());
+            vocaItemDTO.setSentenceEng(row.getSentenceEng());
+            vocaItemDTO.setSentenceKor(row.getSentenceKor());
+            wordList.add(vocaItemDTO);
+        }
+        vocaSectionDTO.setVocaItemDTOS(wordList);
+
         Section section = sectionRepository.findById(sectionId).orElseThrow();
 
         vocaSectionDTO.setSectionId(section.getId());
@@ -281,40 +327,7 @@ public class LearnServiceImpl implements LearnService{
 
         return resultList;
     }
-    private VocaSectionDTO getSectionData(Long sectionId){
-        List<Voca> vocaList = vocaRepository.findBySectionIdOrderById(sectionId);
-        VocaSectionDTO vocaSectionDTO = new VocaSectionDTO();
-        List<VocaItemDTO> wordList = new LinkedList<>();
-        List<Voca> createSentenceList=new ArrayList<>();
 
-        //문장 생성 레코드 필터링
-        for(Voca row: vocaList){
-            if(row.getSentenceEng()==null || row.getSentenceKor()==null){
-                createSentenceList.add(row);
-            }
-        }
-        //문장 생성
-        if(!createSentenceList.isEmpty()){
-            createSentence(createSentenceList);
-        }
-
-        //데이터 출력
-        for(Voca row : vocaList){
-            VocaItemDTO vocaItemDTO = new VocaItemDTO();
-            vocaItemDTO.setId(row.getId());
-            vocaItemDTO.setEng(row.getEng());
-            vocaItemDTO.setKor(row.getKor());
-            vocaItemDTO.setBookmark(row.isBookmark());
-            vocaItemDTO.setMistakes(row.getMistakes());
-            vocaItemDTO.setSentenceEng(row.getSentenceEng());
-            vocaItemDTO.setSentenceKor(row.getSentenceKor());
-            wordList.add(vocaItemDTO);
-        }
-
-
-        vocaSectionDTO.setVocaItemDTOS(wordList);
-        return vocaSectionDTO;
-    }
     @Transactional
     public void createSentence(List<Voca> createVocaList){
         String system = "사족 붙히지 말고 원하는 답만 알려줘\n"+

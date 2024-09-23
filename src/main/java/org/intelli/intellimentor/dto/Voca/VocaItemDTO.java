@@ -1,8 +1,10 @@
-package org.intelli.intellimentor.dto;
+package org.intelli.intellimentor.dto.Voca;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class VocaItemDTO {
     private Long id;
     private String eng;

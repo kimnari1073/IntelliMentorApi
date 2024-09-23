@@ -1,17 +1,15 @@
 package org.intelli.intellimentor.controller;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.dto.QuizRequestDTO;
-import org.intelli.intellimentor.dto.VocaSectionDTO;
+import org.intelli.intellimentor.dto.Voca.VocaAllDTO;
+import org.intelli.intellimentor.dto.Voca.VocaSectionDTO;
 import org.intelli.intellimentor.service.LearnService;
-import org.intelli.intellimentor.util.JWTUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 
@@ -42,7 +40,7 @@ public class LearnController {
     //학습 조회(전체)
     @GetMapping("/read/{titleId}")
     public ResponseEntity<?> getLearn(@PathVariable("titleId") Long titleId){
-        Map<String, Object> result = learnService.getLearn(titleId);
+        VocaAllDTO result = learnService.getLearn(titleId);
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
