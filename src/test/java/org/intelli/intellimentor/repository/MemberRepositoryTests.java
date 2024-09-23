@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 @SpringBootTest
@@ -63,17 +64,17 @@ public class MemberRepositoryTests {
     @Test
     public void testGetHome(){
         //초기 데이터 설정
-        String email = "user1@aaa.com";
+        String userId = "user1@aaa.com";
 
         //로직
-        List<Voca> vocaList = vocaRepository.findByUserIdAndSectionIdIsNotNullAndSentenceEngIsNotNull(email);
+        List<Voca> vocaList = vocaRepository.findByUserIdAndSectionIdIsNotNullAndSentenceEngIsNotNull(userId);
         List<Voca> topVocaList = vocaList.stream()
                 .sorted(Comparator.comparingInt(Voca::getMistakes).reversed()) // mistakes 필드를 기준으로 내림차순 정렬
                 .limit(5) // 상위 5개만 선택
                 .toList(); // 리스트로 변환
 
-        Random random = new Random();
-        Voca voca = topVocaList.get(random.nextInt(topVocaList.size()));
+// ThreadLocalRandom을 사용하여 랜덤하게 1개의 단어 선택
+        Voca voca = topVocaList.get(ThreadLocalRandom.current().nextInt(topVocaList.size()));
         VocaItemDTO vocaItemDTO = VocaItemDTO.fromEntity(voca);
 
         log.info(vocaItemDTO);

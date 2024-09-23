@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.dto.MemberDTO;
 import org.intelli.intellimentor.dto.MemberSubDTO;
+import org.intelli.intellimentor.dto.Voca.VocaItemDTO;
 import org.intelli.intellimentor.service.MemberService;
 import org.intelli.intellimentor.util.CustomJWTException;
 import org.intelli.intellimentor.util.JWTUtil;
@@ -21,6 +22,16 @@ import java.util.Map;
 @RequestMapping("/api/member")
 public class MemberController {
     private final MemberService memberService;
+
+    @GetMapping("/")
+    public ResponseEntity<?> getHomeVoca(
+            @RequestHeader("Authorization") String authHeader
+    ){
+        String email = JWTUtil.JWTtoEmail(authHeader);
+        VocaItemDTO result = memberService.getHomeVoca(email);
+
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
 
     //소셜 회원가입&로그인 - 카카오
     @GetMapping("/kakao")

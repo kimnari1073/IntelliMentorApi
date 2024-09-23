@@ -4,9 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.domain.Member;
 import org.intelli.intellimentor.domain.MemberRole;
+import org.intelli.intellimentor.domain.Voca;
 import org.intelli.intellimentor.dto.MemberDTO;
 import org.intelli.intellimentor.dto.MemberSubDTO;
+import org.intelli.intellimentor.dto.Voca.VocaItemDTO;
 import org.intelli.intellimentor.repository.MemberRepository;
+import org.intelli.intellimentor.repository.VocaRepository;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -18,9 +21,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.LinkedHashMap;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +31,22 @@ import java.util.Optional;
 public class MemberServiceImpl implements MemberService{
 
     private final MemberRepository memberRepository;
+    private final VocaRepository vocaRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Override
+    public VocaItemDTO getHomeVoca(String userId) {
+        List<Voca> vocaList = vocaRepository.findByUserIdAndSectionIdIsNotNullAndSentenceEngIsNotNull(userId);
+        List<Voca> topVocaList = vocaList.stream()
+                .sorted(Comparator.comparingInt(Voca::getMistakes).reversed()) // mistakes 필드를 기준으로 내림차순 정렬
+                .limit(5) // 상위 5개만 선택
+                .toList(); // 리스트로 변환
+
+// ThreadLocalRandom을 사용하여 랜덤하게 1개의 단어 선택
+        Voca voca = topVocaList.get(ThreadLocalRandom.current().nextInt(topVocaList.size()));
+        VocaItemDTO vocaItemDTO = VocaItemDTO.fromEntity(voca);
+        return vocaItemDTO;
+    }
 
     @Override
     public MemberDTO getKakaoMember(String accessToken) {
