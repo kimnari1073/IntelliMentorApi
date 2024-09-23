@@ -170,14 +170,7 @@ public class LearnServiceTests {
 
         //데이터 출력
         for(Voca row : vocaList){
-            VocaItemDTO vocaItemDTO = new VocaItemDTO();
-            vocaItemDTO.setId(row.getId());
-            vocaItemDTO.setEng(row.getEng());
-            vocaItemDTO.setKor(row.getKor());
-            vocaItemDTO.setBookmark(row.isBookmark());
-            vocaItemDTO.setMistakes(row.getMistakes());
-            vocaItemDTO.setSentenceEng(row.getSentenceEng());
-            vocaItemDTO.setSentenceKor(row.getSentenceKor());
+            VocaItemDTO vocaItemDTO = VocaItemDTO.fromEntity(row);
             wordList.add(vocaItemDTO);
         }
         vocaSectionDTO.setVocaItemDTOS(wordList);

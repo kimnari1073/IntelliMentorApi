@@ -139,7 +139,7 @@ public class LearnServiceImpl implements LearnService{
         return vocaAllDTO;
     }
 
-    //학습 조회(섹션)
+    //학습 하기
     @Override
     public VocaSectionDTO getLearnBySection(Long sectionId) {
         List<Voca> vocaList = vocaRepository.findBySectionIdOrderById(sectionId);
@@ -160,14 +160,7 @@ public class LearnServiceImpl implements LearnService{
 
         //데이터 출력
         for(Voca row : vocaList){
-            VocaItemDTO vocaItemDTO = new VocaItemDTO();
-            vocaItemDTO.setId(row.getId());
-            vocaItemDTO.setEng(row.getEng());
-            vocaItemDTO.setKor(row.getKor());
-            vocaItemDTO.setBookmark(row.isBookmark());
-            vocaItemDTO.setMistakes(row.getMistakes());
-            vocaItemDTO.setSentenceEng(row.getSentenceEng());
-            vocaItemDTO.setSentenceKor(row.getSentenceKor());
+            VocaItemDTO vocaItemDTO = VocaItemDTO.fromEntity(row);
             wordList.add(vocaItemDTO);
         }
         vocaSectionDTO.setVocaItemDTOS(wordList);
