@@ -2,6 +2,7 @@ package org.intelli.intellimentor.service;
 
 
 import org.intelli.intellimentor.dto.QuizRequestDTO;
+import org.intelli.intellimentor.dto.VocaSectionDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,7 @@ public interface LearnService {
     void deleteLearn(Long titleId);//학습초기화
     void setBookmark(Long vocaId);
     Map<String, Object> getLearn(Long titleId);//학습 조회(전체)
-    Map<String, Object> getLearnBySection(Long sectionId);
+    VocaSectionDTO getLearnBySection(Long sectionId);
     Map<String, Object> getQuiz(Long sectionId,String subject);
     Map<String,Object> markQuiz(Long sectionId, QuizRequestDTO quizRequestDTO);
 }

@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.dto.QuizRequestDTO;
+import org.intelli.intellimentor.dto.VocaSectionDTO;
 import org.intelli.intellimentor.service.LearnService;
 import org.intelli.intellimentor.util.JWTUtil;
 import org.springframework.http.HttpStatus;
@@ -46,10 +47,9 @@ public class LearnController {
     }
 
     //학습 조회(섹션)
-    @GetMapping("/read")
-    public ResponseEntity<?> getLearnBySection(@RequestParam Long sectionId
-    ){
-        Map<String, Object> result = learnService.getLearnBySection(sectionId);
+    @GetMapping("/read/section/{sectionId}")
+    public ResponseEntity<?> getLearnBySection(@PathVariable("sectionId") Long sectionId){
+        VocaSectionDTO result = learnService.getLearnBySection(sectionId);
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 

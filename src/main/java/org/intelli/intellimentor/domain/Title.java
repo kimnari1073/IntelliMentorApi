@@ -20,7 +20,7 @@ public class Title {
     private Long id;
     private String title;
 
-    @OneToMany(mappedBy = "title", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "title", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Voca> vocas;
 }

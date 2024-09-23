@@ -8,6 +8,8 @@ import org.intelli.intellimentor.domain.Section;
 import org.intelli.intellimentor.domain.Voca;
 import org.intelli.intellimentor.dto.QuizItemDTO;
 import org.intelli.intellimentor.dto.QuizRequestDTO;
+import org.intelli.intellimentor.dto.VocaItemDTO;
+import org.intelli.intellimentor.dto.VocaSectionDTO;
 import org.intelli.intellimentor.repository.SectionRepository;
 import org.intelli.intellimentor.repository.VocaRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -110,7 +112,7 @@ public class LearnServiceImpl implements LearnService{
         List<Map<String,Object>> dataList = new LinkedList<>();
 
         for(Long sectionId:sectionIdList){
-            dataList.add(getSectionData(sectionId));
+//            dataList.add(getSectionData(sectionId));
         }
 
         resultMap.put("title",voca.getTitle());
@@ -122,8 +124,14 @@ public class LearnServiceImpl implements LearnService{
 
     //학습 조회(섹션)
     @Override
-    public Map<String, Object> getLearnBySection(Long sectionId) {
-        return getSectionData(sectionId);
+    public VocaSectionDTO getLearnBySection(Long sectionId) {
+        VocaSectionDTO vocaSectionDTO = getSectionData(sectionId);
+        Section section = sectionRepository.findById(sectionId).orElseThrow();
+
+        vocaSectionDTO.setSectionId(section.getId());
+        vocaSectionDTO.setSection(section.getSection());
+        vocaSectionDTO.setProgress(section.getProgress());
+        return vocaSectionDTO;
     }
 
     //퀴즈 생성
@@ -273,46 +281,72 @@ public class LearnServiceImpl implements LearnService{
 
         return resultList;
     }
-    private Map<String,Object> getSectionData(Long sectionId){
+    private VocaSectionDTO getSectionData(Long sectionId){
         List<Voca> vocaList = vocaRepository.findBySectionIdOrderById(sectionId);
-        Map<String,Object> resultMap = new LinkedHashMap<>();
-        List<Map<String,Object>> wordList = new LinkedList<>();
+        VocaSectionDTO vocaSectionDTO = new VocaSectionDTO();
+        List<VocaItemDTO> wordList = new LinkedList<>();
+        List<Voca> createSentenceList=new ArrayList<>();
 
-        List<Voca> createSentenceList=vocaRepository.findBySectionIdAndSentenceEngIsNull(sectionId);
-        createSentence(createSentenceList);
-        for(Voca row : vocaList){
-            Map<String, Object> wordMap = new LinkedHashMap<>();
-            wordMap.put("id",row.getId());
-            wordMap.put("eng", row.getEng());
-            wordMap.put("kor", row.getKor());
-            wordMap.put("bookmark", row.isBookmark());
-            wordMap.put("mistakes", row.getMistakes());
-            wordMap.put("sentenceEng",row.getSentenceEng());
-            wordMap.put("sentenceKor",row.getSentenceKor());
-            wordList.add(wordMap);
+        //문장 생성 레코드 필터링
+        for(Voca row: vocaList){
+            if(row.getSentenceEng()==null || row.getSentenceKor()==null){
+                createSentenceList.add(row);
+            }
+        }
+        //문장 생성
+        if(!createSentenceList.isEmpty()){
+            createSentence(createSentenceList);
         }
 
-        resultMap.put("section",vocaList.get(0).getSection());
-        resultMap.put("wordList",wordList);
+        //데이터 출력
+        for(Voca row : vocaList){
+            VocaItemDTO vocaItemDTO = new VocaItemDTO();
+            vocaItemDTO.setId(row.getId());
+            vocaItemDTO.setEng(row.getEng());
+            vocaItemDTO.setKor(row.getKor());
+            vocaItemDTO.setBookmark(row.isBookmark());
+            vocaItemDTO.setMistakes(row.getMistakes());
+            vocaItemDTO.setSentenceEng(row.getSentenceEng());
+            vocaItemDTO.setSentenceKor(row.getSentenceKor());
+            wordList.add(vocaItemDTO);
+        }
 
-        return resultMap;
+
+        vocaSectionDTO.setVocaItemDTOS(wordList);
+        return vocaSectionDTO;
     }
     @Transactional
     public void createSentence(List<Voca> createVocaList){
-        String system = "사족 붙히지 말고 원하는 답만 알려줘.\n" +
-                "정답은 영어문장/문장의뜻 형식으로 알려줘.\n" +
-                "문장의 길이는 100자가 넘지 않게 해줘.";
+        String system = "사족 붙히지 말고 원하는 답만 알려줘\n"+
+                "사용자는 Map의 형태로 <단어:단어뜻>을 알려줄거야.\n" +
+                "너는 단어가 들어간 문장과 문장의 뜻을 알려줘\n"+
+                "정답은 LinkedHashMap형태로 {\"단어\":\"문장/문장뜻\"} 이렇게 알려줘";
+        StringBuilder prompt= new StringBuilder();
         for(Voca row:createVocaList){
-            String prompt = row.getEng()+"의 뜻은 "+row.getKor()+" 야. 이 단어가 들어간 영어 예문을 한 문장만 만들어줘";
-            String response = getChatGPT(prompt,system);
-            String[] sentences = response.split("/");
-
-            row.setSentenceEng(sentences[0].trim());
-            row.setSentenceKor(sentences[1].trim());
-            log.info("eng: "+row.getSentenceEng());
-            log.info("kor: "+row.getSentenceKor());
+            prompt.append(row.getEng()).append(":").append(row.getKor()).append(",");
         }
-        vocaRepository.saveAllAndFlush(createVocaList);
+        log.info("prompt: "+prompt);
+        String response = getChatGPT(prompt.toString(),system);
+
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            // String을 Map으로 변환
+            Map<String, String> map = mapper.readValue(response, Map.class);
+            int i =0;
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                String value = entry.getValue();
+                String[] splitValues = value.split("/");
+                createVocaList.get(i).setSentenceEng(splitValues[0]);
+                createVocaList.get(i).setSentenceKor(splitValues[1]);
+
+                log.info("Key: " + entry.getKey() + ", Value: " + value);
+                i++;
+            }
+            vocaRepository.saveAllAndFlush(createVocaList);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
     private String getChatGPT(String prompt,String system){

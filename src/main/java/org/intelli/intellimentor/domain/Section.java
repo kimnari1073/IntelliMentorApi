@@ -27,7 +27,7 @@ public class Section {
     private Integer senScore;
     private Integer progress;
 
-    @OneToMany(mappedBy = "section")
+    @OneToMany(mappedBy = "section", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Voca> vocas;
 
