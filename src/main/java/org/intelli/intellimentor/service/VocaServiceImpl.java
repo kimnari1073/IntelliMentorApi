@@ -24,6 +24,7 @@ public class VocaServiceImpl implements VocaService{
     private final TitleRepository titleRepository;
     private final SectionRepository sectionRepository;
 
+    //단어생성
     @Override
     public void createVoca(String email,VocaDTO vocaDTO) {//email,VocaDTO(title,kor,eng)
         Title title = Title.builder().title(vocaDTO.getTitle()).build();
@@ -42,6 +43,7 @@ public class VocaServiceImpl implements VocaService{
         vocaRepository.saveAll(vocaList);
     }
 
+    //단어 리스트 조회
     @Override
     @Transactional(readOnly = true)
     public Map<String,Object> getVocaList(String email) {
@@ -62,6 +64,7 @@ public class VocaServiceImpl implements VocaService{
         return result;
     }
 
+    //단어 수정 리스트 조회
     @Override
     @Transactional(readOnly = true)
     public Map<String, Object> getVocaListDetails(Long titleId) {
@@ -105,10 +108,7 @@ public class VocaServiceImpl implements VocaService{
 
         //Section이 있다면 null로 설정
         List<Long> sectionList = vocaRepository.getSectionList(title.getId());
-        log.info("sectionList: "+sectionList);
-        log.info("modifiedList: "+modifiedList);
-        log.info("deleteList: "+deleteList);
-        log.info("addList: "+addList);
+
         if ((!modifiedList.isEmpty() || !deleteList.isEmpty() || !addList.isEmpty())
                 &&!sectionList.contains(null)){
 
@@ -116,6 +116,8 @@ public class VocaServiceImpl implements VocaService{
             List<Voca> vocaList = vocaRepository.findByTitleIdOrderById(title.getId());
             for(Voca row:vocaList){
                 row.setSection(null);
+                row.setMistakes(0);
+                row.setBookmark(false);
             }
             vocaRepository.saveAll(vocaList);
             log.info("voca Save.");
