@@ -22,9 +22,7 @@ public interface VocaRepository extends JpaRepository<Voca,Long> {
     List<Voca> findBySectionIdOrderById(Long sectionId);
 
     //
-    List<Voca> findByUserIdAndSectionIdIsNotNull(String userId);
-
-    List<Voca> findBySectionIdAndSentenceEngIsNull(Long sectionId);
+    List<Voca> findByUserIdAndSectionIdIsNotNullAndSentenceEngIsNotNull(String userId);
 
 
 
