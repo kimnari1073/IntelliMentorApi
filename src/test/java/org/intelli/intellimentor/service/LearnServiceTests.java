@@ -317,12 +317,12 @@ public class LearnServiceTests {
             } else if (score >= vocaCount*0.8) {
                 grade = "B";
                 if(section.getSenScore()>=vocaCount*0.8) grade+="+";
-            } else if (score >= vocaCount*0.7) {
+            } else if (score >= vocaCount*0.65) {
                 grade = "C";
-                if(section.getSenScore()>=vocaCount*0.7) grade+="+";
-            } else if (score >= vocaCount*0.6) {
+                if(section.getSenScore()>=vocaCount*0.65) grade+="+";
+            } else if (score >= vocaCount*0.4) {
                 grade = "D";
-                if(section.getSenScore()>=vocaCount*0.96) grade+="+";
+                if(section.getSenScore()>=vocaCount*0.4) grade+="+";
             } else {
                 grade = "F";
             }
