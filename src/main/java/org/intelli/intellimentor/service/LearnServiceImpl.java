@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -176,21 +177,34 @@ public class LearnServiceImpl implements LearnService{
     //퀴즈 생성
     @Override
     public Map<String, Object> getQuiz(Long sectionId,String subject) {
-        List<Voca> vocaList = vocaRepository.getVocaBySectionId(sectionId);
-        List<List<Map<String, Object>>> result = new ArrayList<>(); // quizList가 아닌 List로 담음
 
-        if (subject.contains("e")) {
-            for (Voca row : vocaList) {
-                List<Map<String, Object>> temList = testFindChoices(vocaList, row, "e");
-                result.add(temList);
+        List<Voca> vocaList = vocaRepository.getVocaBySectionId(sectionId);
+        List<List<Map<String, Object>>> result = new ArrayList<>();
+
+        subject.chars().distinct().forEach(ch -> {
+            char type = (char) ch;
+            if (type == 'e' || type == 'k') {
+                for (Voca row : vocaList) {
+                    List<Map<String, Object>> temList = findChoices(vocaList, row, String.valueOf(type));
+                    result.add(temList);
+                }
+            } else if (type == 's') {
+                List<Voca> createSentenceList = vocaList.stream()
+                        .filter(row -> row.getSentenceEng() == null || row.getSentenceKor() == null)
+                        .collect(Collectors.toList());
+
+                // 문장 생성
+                if (!createSentenceList.isEmpty()) {
+                    createSentence(createSentenceList);
+                }
+
+                // 문장 퀴즈 생성
+                for (Voca row : vocaList) {
+                    List<Map<String, Object>> temList = findChoices(vocaList, row, "s");
+                    result.add(temList);
+                }
             }
-        }
-        if (subject.contains("k")) {
-            for (Voca row : vocaList) {
-                List<Map<String, Object>> temList = testFindChoices(vocaList, row, "k");
-                result.add(temList);
-            }
-        }
+        });
         return Map.of("quiz",result);
     }
 
@@ -295,29 +309,35 @@ public class LearnServiceImpl implements LearnService{
         return result;
     }
 
-    private List<Map<String,Object>> testFindChoices(List<Voca> listVoca, Voca mainVoca,String type){
-        List<Voca> filteredList = new ArrayList<>(listVoca); // 원본 리스트 복사
-        filteredList.remove(mainVoca); //서브 필드를 위한 메인 필드 제거
+    private List<Map<String, Object>> findChoices(List<Voca> listVoca, Voca mainVoca, String type) {
+        List<Voca> filteredList = new ArrayList<>(listVoca);
+        filteredList.remove(mainVoca);
         Collections.shuffle(filteredList);
 
+        if (type.equals("e") || type.equals("k")) {
+            String mainField = type.equals("e") ? "eng" : "kor";
+            String subField = type.equals("e") ? "kor" : "eng";
+            return generateWordChoices(filteredList, mainVoca, mainField, subField);
+        } else {
+            return generateSentenceChoices(filteredList, mainVoca);
+        }
+    }
+
+    private List<Map<String, Object>> generateWordChoices(List<Voca> filteredList, Voca mainVoca, String mainField, String subField) {
         List<Map<String, Object>> resultList = new ArrayList<>();
-
-        // 메인 및 서브 필드 설정
-        String mainField = type.equals("e") ? "eng" : "kor";
-        String subField = type.equals("e") ? "kor" : "eng";
-
-        // 메인 단어 추가
-        resultList.add(Map.of("id", mainVoca.getId(), mainField, type.equals("e") ? mainVoca.getEng() : mainVoca.getKor()));
-
-        // 랜덤으로 선택된 3개의 요소를 추가
-        filteredList.stream()
-                .limit(3) // 3개의 요소로 제한
-                .forEach(voca -> resultList.add(
-                        Map.of("id", voca.getId(), subField, type.equals("e") ? voca.getKor() : voca.getEng())));
-
+        resultList.add(Map.of("id", mainVoca.getId(), mainField, mainField.equals("eng") ? mainVoca.getEng() : mainVoca.getKor()));
+        filteredList.subList(0, 3).forEach(voca -> resultList.add(Map.of("id", voca.getId(), subField, subField.equals("kor") ? voca.getKor() : voca.getEng())));
         int randomInt = (int) (Math.random() * 4) + 1;
-        resultList.add(randomInt,Map.of("id",mainVoca.getId(),subField, type.equals("e") ? mainVoca.getKor() : mainVoca.getEng()));
-
+        resultList.add(randomInt, Map.of("id", mainVoca.getId(), subField, subField.equals("kor") ? mainVoca.getKor() : mainVoca.getEng()));
+        return resultList;
+    }
+    private List<Map<String, Object>> generateSentenceChoices(List<Voca> filteredList, Voca mainVoca) {
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        String sentence = mainVoca.getSentenceEng().replaceAll("(?i)" + mainVoca.getEng(), "__________");
+        resultList.add(Map.of("id", mainVoca.getId(), "sentence", sentence));
+        filteredList.subList(0, 3).forEach(voca -> resultList.add(Map.of("id", voca.getId(), "eng", voca.getEng())));
+        int randomInt = (int) (Math.random() * 4) + 1;
+        resultList.add(randomInt, Map.of("id", mainVoca.getId(), "eng", mainVoca.getEng()));
         return resultList;
     }
 
