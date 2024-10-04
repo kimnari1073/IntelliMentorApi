@@ -35,7 +35,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 member.isSocial(),
                 member.getMemberRoleList()
                         .stream()
-                        .map(memberRole -> memberRole.name()).collect(Collectors.toList())
+                        .map(Enum::name).collect(Collectors.toList())
         );
 
         log.info(memberDTO);

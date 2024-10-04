@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +22,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @Log4j2
@@ -30,16 +32,20 @@ public class CustomSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http)throws Exception{
         log.info("------------------------------security config---------------");
+        //cors 설정
         http.cors(httpSecurityCorsConfigurer -> {
             httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource());
         });
 
+        //세션 관리 -> REST API
         http.sessionManagement(httpSecuritySessionManagementConfigurer -> {
             httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.NEVER);
         });
 
-        http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable());
+        //CSRF 비활성화
+        http.csrf(AbstractHttpConfigurer::disable);
 
+        //로그인 설정
         http.formLogin(config ->{
 
             config.loginPage("/api/member/login");
@@ -47,10 +53,11 @@ public class CustomSecurityConfig {
             config.failureHandler(new APILoginFailHandler());
         });
 
+        //JWT체크 필터
         http.addFilterBefore(new JWTCheckFilter(), UsernamePasswordAuthenticationFilter.class);
 
 
-        //PreAuth
+        //예외처리
         http.exceptionHandling(config -> {
             config.accessDeniedHandler(new CustomAccessDeniedHandler());
         });
@@ -66,19 +73,14 @@ public class CustomSecurityConfig {
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // 모든 Origin을 허용
         configuration.setAllowedOriginPatterns(Arrays.asList("*"));
 
-        // 허용할 HTTP 메서드 지정
         configuration.setAllowedMethods(Arrays.asList("HEAD","GET","POST","PUT","DELETE","PATCH","OPTIONS"));
 
-        // 모든 헤더를 허용하도록 설정
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowedHeaders(List.of("*"));
 
-        // 자격 증명(쿠키, 인증 헤더 등)을 허용
         configuration.setAllowCredentials(true);
 
-        // CORS 설정을 적용할 경로 패턴을 지정
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
 
