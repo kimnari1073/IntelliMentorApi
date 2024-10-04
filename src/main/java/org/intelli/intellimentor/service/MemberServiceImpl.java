@@ -7,6 +7,7 @@ import org.intelli.intellimentor.domain.MemberRole;
 import org.intelli.intellimentor.domain.Voca;
 import org.intelli.intellimentor.dto.MemberDTO;
 import org.intelli.intellimentor.dto.MemberSubDTO;
+import org.intelli.intellimentor.dto.Voca.VocaHomeDTO;
 import org.intelli.intellimentor.dto.Voca.VocaItemDTO;
 import org.intelli.intellimentor.repository.MemberRepository;
 import org.intelli.intellimentor.repository.VocaRepository;
@@ -38,14 +39,20 @@ public class MemberServiceImpl implements MemberService{
     public VocaItemDTO getHomeVoca(String userId) {
         List<Voca> vocaList = vocaRepository.findByUserIdAndSectionIdIsNotNullAndSentenceEngIsNotNull(userId);
         List<Voca> topVocaList = vocaList.stream()
-                .sorted(Comparator.comparingInt(Voca::getMistakes).reversed()) // mistakes 필드를 기준으로 내림차순 정렬
-                .limit(5) // 상위 5개만 선택
+                .filter(voca -> voca.getMistakes() > 0) // mistakes 필드가 1 이상인 경우만 필터링
                 .toList(); // 리스트로 변환
 
-// ThreadLocalRandom을 사용하여 랜덤하게 1개의 단어 선택
-        Voca voca = topVocaList.get(ThreadLocalRandom.current().nextInt(topVocaList.size()));
-        VocaItemDTO vocaItemDTO = VocaItemDTO.fromEntity(voca);
-        return vocaItemDTO;
+        VocaHomeDTO vocaHomeDTO;
+        if (!topVocaList.isEmpty()) {
+            // ThreadLocalRandom을 사용하여 랜덤하게 1개의 단어 선택
+            Voca voca = topVocaList.get(ThreadLocalRandom.current().nextInt(topVocaList.size()));
+            vocaHomeDTO = VocaHomeDTO.from(voca, voca.getSection().getId());
+        } else { //틀린 단어가 없으면
+            Voca voca = vocaList.get(ThreadLocalRandom.current().nextInt(vocaList.size()));
+            vocaHomeDTO = VocaHomeDTO.from(voca, voca.getSection().getId());
+
+        }
+        return vocaHomeDTO;
     }
 
     @Override

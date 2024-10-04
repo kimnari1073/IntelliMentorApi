@@ -1,5 +1,7 @@
 package org.intelli.intellimentor.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.domain.Section;
 import org.intelli.intellimentor.domain.Title;
@@ -10,7 +12,10 @@ import org.intelli.intellimentor.repository.TitleRepository;
 import org.intelli.intellimentor.repository.VocaRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
@@ -23,6 +28,11 @@ public class VocaServiceTests {
     private TitleRepository titleRepository;
     @Autowired
     private SectionRepository sectionRepository;
+
+    private final String API_URL = "https://api.openai.com/v1/chat/completions";
+    private final RestTemplate restTemplate = new RestTemplate();
+    @Value("${openai.api.key}")
+    private String apiKey;
 
     @Test
     public void testInsertVoca(){
@@ -288,5 +298,50 @@ public class VocaServiceTests {
         Long titleId = 2L;
         titleRepository.deleteById(titleId);
     }
+
+    @Test
+    public void testCreateVocaByChatGPT(){
+        String promptType = "해외여행";
+        String promptTitle = "해외여행과 관련된 영어제목 ";
+        String email = "user1@aaa.com";
+
+    }
+    private String testChatGPT(String prompt,String system){
+        try {
+            // HTTP 요청 헤더 설정
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setBearerAuth(apiKey);
+
+            // 요청 본문 작성
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("model", "gpt-4o-mini");
+            requestBody.put("messages", new Object[]{
+                    // 'system' role로 모델에 기본 지침 제공
+                    Map.of("role", "system", "content", system),
+                    // 'user' role로 실제 사용자 입력 제공
+                    Map.of("role", "user", "content", prompt)
+            });
+
+            HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+
+            // API 호출
+            ResponseEntity<String> responseEntity = restTemplate.exchange(API_URL, HttpMethod.POST, requestEntity, String.class);
+
+            // 응답 처리
+            String responseBody = responseEntity.getBody();
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode jsonNode = mapper.readTree(responseBody);
+            String chatResponse = jsonNode.path("choices").get(0).path("message").path("content").asText();
+
+            return chatResponse;
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.info("Error occurred: "+e.getMessage());
+            return null;
+        }
+
+    }
+
 
 }

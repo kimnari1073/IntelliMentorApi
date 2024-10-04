@@ -4,15 +4,14 @@ import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.domain.Member;
 import org.intelli.intellimentor.domain.MemberRole;
 import org.intelli.intellimentor.domain.Voca;
+import org.intelli.intellimentor.dto.Voca.VocaHomeDTO;
 import org.intelli.intellimentor.dto.Voca.VocaItemDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
@@ -62,22 +61,27 @@ public class MemberRepositoryTests {
     }
 
     @Test
-    public void testGetHome(){
-        //초기 데이터 설정
+    public void testGetHome() {
+        // 초기 데이터 설정
         String userId = "user1@aaa.com";
 
-        //로직
+        // 로직
         List<Voca> vocaList = vocaRepository.findByUserIdAndSectionIdIsNotNullAndSentenceEngIsNotNull(userId);
         List<Voca> topVocaList = vocaList.stream()
-                .sorted(Comparator.comparingInt(Voca::getMistakes).reversed()) // mistakes 필드를 기준으로 내림차순 정렬
-                .limit(5) // 상위 5개만 선택
+                .filter(voca -> voca.getMistakes() > 0) // mistakes 필드가 1 이상인 경우만 필터링
                 .toList(); // 리스트로 변환
 
-// ThreadLocalRandom을 사용하여 랜덤하게 1개의 단어 선택
-        Voca voca = topVocaList.get(ThreadLocalRandom.current().nextInt(topVocaList.size()));
-        VocaItemDTO vocaItemDTO = VocaItemDTO.fromEntity(voca);
+        VocaHomeDTO vocaHomeDTO = null;
+        if (!topVocaList.isEmpty()) {
+            // ThreadLocalRandom을 사용하여 랜덤하게 1개의 단어 선택
+            Voca voca = topVocaList.get(ThreadLocalRandom.current().nextInt(topVocaList.size()));
+            vocaHomeDTO = VocaHomeDTO.from(voca, voca.getSection().getId());
+        } else { //틀린 단어가 없으면
+            Voca voca = vocaList.get(ThreadLocalRandom.current().nextInt(vocaList.size()));
+            vocaHomeDTO = VocaHomeDTO.from(voca, voca.getSection().getId());
 
-        log.info(vocaItemDTO);
+        }
 
+        log.info(vocaHomeDTO);
     }
 }
