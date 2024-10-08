@@ -23,15 +23,7 @@ import java.util.Map;
 public class MemberController {
     private final MemberService memberService;
 
-    @GetMapping("/")
-    public ResponseEntity<?> getHomeVoca(
-            @RequestHeader("Authorization") String authHeader
-    ){
-        String email = JWTUtil.JWTtoEmail(authHeader);
-        VocaItemDTO result = memberService.getHomeVoca(email);
 
-        return ResponseEntity.status(HttpStatus.OK).body(result);
-    }
 
     //소셜 회원가입&로그인 - 카카오
     @GetMapping("/kakao")

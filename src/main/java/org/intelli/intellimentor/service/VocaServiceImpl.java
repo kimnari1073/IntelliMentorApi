@@ -3,6 +3,8 @@ package org.intelli.intellimentor.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.domain.Title;
+import org.intelli.intellimentor.dto.Voca.VocaHomeDTO;
+import org.intelli.intellimentor.dto.Voca.VocaItemDTO;
 import org.intelli.intellimentor.dto.Voca.VocaUpdateDTO;
 import org.intelli.intellimentor.repository.SectionRepository;
 import org.intelli.intellimentor.repository.TitleRepository;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @Transactional
@@ -24,6 +27,25 @@ public class VocaServiceImpl implements VocaService{
     private final TitleRepository titleRepository;
     private final SectionRepository sectionRepository;
 
+    @Override
+    public VocaItemDTO getHomeVoca(String userId) {
+        List<Voca> vocaList = vocaRepository.findByUserIdAndSectionIdIsNotNullAndSentenceEngIsNotNull(userId);
+        List<Voca> topVocaList = vocaList.stream()
+                .filter(voca -> voca.getMistakes() > 0) // mistakes 필드가 1 이상인 경우만 필터링
+                .toList(); // 리스트로 변환
+
+        VocaHomeDTO vocaHomeDTO;
+        if (!topVocaList.isEmpty()) {
+            // ThreadLocalRandom을 사용하여 랜덤하게 1개의 단어 선택
+            Voca voca = topVocaList.get(ThreadLocalRandom.current().nextInt(topVocaList.size()));
+            vocaHomeDTO = VocaHomeDTO.from(voca, voca.getSection().getId());
+        } else { //틀린 단어가 없으면
+            Voca voca = vocaList.get(ThreadLocalRandom.current().nextInt(vocaList.size()));
+            vocaHomeDTO = VocaHomeDTO.from(voca, voca.getSection().getId());
+
+        }
+        return vocaHomeDTO;
+    }
     //단어생성
     @Override
     public void createVoca(String email,VocaDTO vocaDTO) {//email,VocaDTO(title,kor,eng)

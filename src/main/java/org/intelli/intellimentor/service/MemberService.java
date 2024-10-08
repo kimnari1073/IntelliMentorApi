@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.stream.Collectors;
 
 public interface MemberService {
-    VocaItemDTO getHomeVoca(String userId);
+
     MemberDTO getKakaoMember(String accessToken);
     void register(MemberSubDTO memberSubDTO);
     void modifyMember(MemberSubDTO memberSubDTO);

@@ -35,25 +35,7 @@ public class MemberServiceImpl implements MemberService{
     private final VocaRepository vocaRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Override
-    public VocaItemDTO getHomeVoca(String userId) {
-        List<Voca> vocaList = vocaRepository.findByUserIdAndSectionIdIsNotNullAndSentenceEngIsNotNull(userId);
-        List<Voca> topVocaList = vocaList.stream()
-                .filter(voca -> voca.getMistakes() > 0) // mistakes 필드가 1 이상인 경우만 필터링
-                .toList(); // 리스트로 변환
 
-        VocaHomeDTO vocaHomeDTO;
-        if (!topVocaList.isEmpty()) {
-            // ThreadLocalRandom을 사용하여 랜덤하게 1개의 단어 선택
-            Voca voca = topVocaList.get(ThreadLocalRandom.current().nextInt(topVocaList.size()));
-            vocaHomeDTO = VocaHomeDTO.from(voca, voca.getSection().getId());
-        } else { //틀린 단어가 없으면
-            Voca voca = vocaList.get(ThreadLocalRandom.current().nextInt(vocaList.size()));
-            vocaHomeDTO = VocaHomeDTO.from(voca, voca.getSection().getId());
-
-        }
-        return vocaHomeDTO;
-    }
 
     @Override
     public MemberDTO getKakaoMember(String accessToken) {

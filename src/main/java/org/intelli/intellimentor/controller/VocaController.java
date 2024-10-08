@@ -3,6 +3,7 @@ package org.intelli.intellimentor.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.dto.Voca.VocaDTO;
+import org.intelli.intellimentor.dto.Voca.VocaItemDTO;
 import org.intelli.intellimentor.dto.Voca.VocaUpdateDTO;
 import org.intelli.intellimentor.service.VocaService;
 import org.intelli.intellimentor.util.JWTUtil;
@@ -19,6 +20,15 @@ import java.util.Map;
 public class VocaController {
     private final VocaService vocaService;
 
+    @GetMapping("/")
+    public ResponseEntity<?> getHomeVoca(
+            @RequestHeader("Authorization") String authHeader
+    ){
+        String email = JWTUtil.JWTtoEmail(authHeader);
+        VocaItemDTO result = vocaService.getHomeVoca(email);
+
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
     //단어장 생성
     @PostMapping("/create")
     public ResponseEntity<?> createVoca(
