@@ -469,16 +469,17 @@ public class LearnServiceTests {
         @Transactional
         @Commit
         protected void testCreateSentence(List<Voca> createVocaList){
-            String system = "사족 붙히지 말고 원하는 답만 알려줘\n"+
-            "사용자는 Map의 형태로 <단어:단어뜻>을 알려줄거야.\n" +
-                    "너는 단어가 들어간 문장과 문장의 뜻을 알려줘\n"+
-            "정답은 LinkedHashMap형태로 {\"단어\":\"문장/문장뜻\"} 이렇게 알려줘";
+            StringBuilder system = new StringBuilder();
+            system.append("사족 붙히지 말고 원하는 답만 알려줘\n")
+                    .append("사용자는 Map의 형태로 <단어:단어뜻>을 알려줄거야.\n")
+                    .append("너는 단어가 들어간 문장과 문장의 뜻을 알려줘\n")
+                    .append("정답은 LinkedHashMap형태로 {\"단어\":\"문장/문장뜻\"} 이렇게 알려줘");
             StringBuilder prompt= new StringBuilder();
             for(Voca row:createVocaList){
                 prompt.append(row.getEng()).append(":").append(row.getKor()).append(",");
             }
             log.info("prompt: "+prompt);
-            String response = testChatGPT(prompt.toString(),system);
+            String response = testChatGPT(prompt.toString(),system.toString());
 
             ObjectMapper mapper = new ObjectMapper();
             try {

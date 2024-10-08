@@ -1,5 +1,6 @@
 package org.intelli.intellimentor.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
@@ -35,7 +36,7 @@ public class VocaServiceTests {
     private String apiKey;
 
     @Test
-    public void testInsertVoca(){
+    public void testInsertVoca() {
         vocaRepository.deleteAll();
         titleRepository.deleteAll();
         sectionRepository.deleteAll();
@@ -71,13 +72,13 @@ public class VocaServiceTests {
         //섹션설정
         int sectionMax = 2;
         List<Long> sectionIdList = new ArrayList<>();
-        for(int i =1; i<=sectionMax;i++){
+        for (int i = 1; i <= sectionMax; i++) {
             Section section = Section.builder().section(i).build();
             sectionRepository.save(section);
             sectionIdList.add(section.getId());
         }
 
-        for(int i=0; i<englishWords1.length; i++){
+        for (int i = 0; i < englishWords1.length; i++) {
             Long sectionId = sectionIdList.get(i % sectionMax);
 
             Section section = sectionRepository.findById(sectionId)
@@ -89,18 +90,18 @@ public class VocaServiceTests {
                     .userId("user1@aaa.com")
                     .section(section)
                     .bookmark(random.nextBoolean())
-                    .mistakes(random.nextInt(10)+1)
+                    .mistakes(random.nextInt(10) + 1)
                     .build();
             vocaList1.add(voca);
         }
-        for(int i=0;i< englishWords2.length;i++){
+        for (int i = 0; i < englishWords2.length; i++) {
             Voca voca = Voca.builder()
                     .eng(englishWords2[i])
                     .kor(meanings2[i])
                     .title(title2)
                     .userId("user1@aaa.com")
                     .bookmark(random.nextBoolean())
-                    .mistakes(random.nextInt(10)+1)
+                    .mistakes(random.nextInt(10) + 1)
                     .build();
             vocaList2.add(voca);
         }
@@ -146,57 +147,60 @@ public class VocaServiceTests {
         sectionRepository.saveAll(saveSectionList);  // 섹션 저장
         vocaRepository.saveAll(vocaList);  // Voca 저장
     }
+
     @Test
-    public void testGetVocaList(){
+    public void testGetVocaList() {
         String email = "user1@aaa.com";
         List<Object[]> vocaList = vocaRepository.getVocaList(email);
 
-        List<Map<String,Object>> resultList = new ArrayList<>();
-        for(Object[] row : vocaList){
-            Map<String,Object> vocaListMap = new LinkedHashMap<>();
-            vocaListMap.put("titleId",row[0]);
-            vocaListMap.put("title",row[1]);
-            vocaListMap.put("count",row[2]);
-            vocaListMap.put("section",row[3]);
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        for (Object[] row : vocaList) {
+            Map<String, Object> vocaListMap = new LinkedHashMap<>();
+            vocaListMap.put("titleId", row[0]);
+            vocaListMap.put("title", row[1]);
+            vocaListMap.put("count", row[2]);
+            vocaListMap.put("section", row[3]);
 
             resultList.add(vocaListMap);
         }
-        Map<String,Object> result = new LinkedHashMap<>();
-        result.put("data",resultList);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("data", resultList);
 
         log.info(result);
 
 
     }
+
     @Test
-    public void testGetVocaDetails(){
+    public void testGetVocaDetails() {
         Long titleId = 1L; //토익
 
         String title = titleRepository.getTitle(titleId);
         List<Voca> vocaList = vocaRepository.findByTitleIdOrderById(titleId);
 
 
-        List<Map<String,Object>> wordList = new ArrayList<>();
-        for(Voca row : vocaList){
-            Map<String,Object> vocaListMap = new LinkedHashMap<>();
-            vocaListMap.put("id",row.getId());
-            vocaListMap.put("eng",row.getEng());
-            vocaListMap.put("kor",row.getKor());
+        List<Map<String, Object>> wordList = new ArrayList<>();
+        for (Voca row : vocaList) {
+            Map<String, Object> vocaListMap = new LinkedHashMap<>();
+            vocaListMap.put("id", row.getId());
+            vocaListMap.put("eng", row.getEng());
+            vocaListMap.put("kor", row.getKor());
 
             wordList.add(vocaListMap);
         }
 
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("titleId",titleId);
-        result.put("title",title);
-        result.put("word",wordList);
+        result.put("titleId", titleId);
+        result.put("title", title);
+        result.put("word", wordList);
 
         log.info(result);
 
     }
+
     @Test
-    public void testUpdateVoca(){
-        String email="user1@aaa.com";
+    public void testUpdateVoca() {
+        String email = "user1@aaa.com";
         Long titleId = 1L;
         //VocaUpdateDTO설정
         VocaUpdateDTO vocaUpdateDTO = new VocaUpdateDTO();
@@ -233,8 +237,8 @@ public class VocaServiceTests {
         List<Voca> addList = vocaUpdateDTO.getAddWord();
 
         //title 수정
-        if(vocaUpdateDTO.getModifiedTitle() != null &&
-                !vocaUpdateDTO.getModifiedTitle().equals(title.getTitle())){
+        if (vocaUpdateDTO.getModifiedTitle() != null &&
+                !vocaUpdateDTO.getModifiedTitle().equals(title.getTitle())) {
             title.setTitle(vocaUpdateDTO.getModifiedTitle());
             titleRepository.save(title);
             log.info("Title Modified...");
@@ -242,16 +246,16 @@ public class VocaServiceTests {
 
         //Section이 있다면 null로 설정
         List<Long> sectionList = vocaRepository.getSectionList(title.getId());
-        log.info("sectionList: "+sectionList);
-        log.info("modifiedList: "+modifiedList);
-        log.info("deleteList: "+deleteList);
-        log.info("addList: "+addList);
+        log.info("sectionList: " + sectionList);
+        log.info("modifiedList: " + modifiedList);
+        log.info("deleteList: " + deleteList);
+        log.info("addList: " + addList);
         if ((!modifiedList.isEmpty() || !deleteList.isEmpty() || !addList.isEmpty())
-                &&!sectionList.contains(null)){
+                && !sectionList.contains(null)) {
 
             //List<Voca> 조회 및 Section reset삭제
             List<Voca> vocaList = vocaRepository.findByTitleIdOrderById(title.getId());
-            for(Voca row:vocaList){
+            for (Voca row : vocaList) {
                 row.setSection(null);
                 row.setMistakes(0);
                 row.setBookmark(false);
@@ -266,7 +270,7 @@ public class VocaServiceTests {
 
         //수정
         if (!modifiedList.isEmpty()) {
-            for(Voca voca : modifiedList){
+            for (Voca voca : modifiedList) {
                 voca.setUserId(email);
                 voca.setTitle(title);
             }
@@ -275,15 +279,15 @@ public class VocaServiceTests {
         }
 
         //삭제
-        if(!deleteList.isEmpty()){
+        if (!deleteList.isEmpty()) {
             vocaRepository.deleteAllById(deleteList);
             log.info("Voca Delete...");
 
         }
 
         //추가
-        if(!addList.isEmpty()){
-            for(Voca voca: addList){
+        if (!addList.isEmpty()) {
+            for (Voca voca : addList) {
                 voca.setUserId(email);
                 voca.setTitle(title);
             }
@@ -294,19 +298,33 @@ public class VocaServiceTests {
     }
 
     @Test
-    public void testDeleteVoca(){
+    public void testDeleteVoca() {
         Long titleId = 2L;
         titleRepository.deleteById(titleId);
     }
 
     @Test
-    public void testCreateVocaByChatGPT(){
-        String promptType = "해외여행";
-        String promptTitle = "해외여행과 관련된 영어제목 ";
+    public void testCreateVocaByChatGPT() {
+        String subject = "해외여행";
+        int count = 20;
         String email = "user1@aaa.com";
+        StringBuilder prompt = new StringBuilder();
+        prompt.append(subject).append("과 관련된 단어 ").append(count).append("개 생성해줘");
+
+        StringBuilder system = new StringBuilder();
+        system.append("사족 붙히지 말고 원하는 답만 알려줘\n")
+                .append("사용자가 원하는 주제와 관련된 단어를 생성해줘.\n")
+                .append("key가 \"eng\"는 영어단어, \"kor\"은 영어단어의 뜻을 리스트로 생성해줘");
+
+        List<Map<String, String>> response = testChatGPT(prompt.toString(), system.toString());
+        log.info("response: " + response);
+
+
+
 
     }
-    private String testChatGPT(String prompt,String system){
+
+    private List<Map<String, String>> testChatGPT(String prompt, String system) {
         try {
             // HTTP 요청 헤더 설정
             HttpHeaders headers = new HttpHeaders();
@@ -326,20 +344,33 @@ public class VocaServiceTests {
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
 
             // API 호출
-            ResponseEntity<String> responseEntity = restTemplate.exchange(API_URL, HttpMethod.POST, requestEntity, String.class);
+            ResponseEntity<Map> responseEntity = restTemplate.exchange(API_URL, HttpMethod.POST, requestEntity, Map.class);
 
             // 응답 처리
-            String responseBody = responseEntity.getBody();
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode jsonNode = mapper.readTree(responseBody);
-            String chatResponse = jsonNode.path("choices").get(0).path("message").path("content").asText();
+            Map<String, Object> responseBody = responseEntity.getBody();
+            List<Map<String, Object>> choices = (List<Map<String, Object>>) responseBody.get("choices");
 
-            return chatResponse;
+            if (choices != null && !choices.isEmpty()) {
+                // choices 배열의 첫 번째 요소에서 "message" 부분을 추출
+                Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+                if (message != null) {
+                    // content는 String 타입이므로, 이를 JSON으로 변환하여 List로 파싱
+                    String content = message.get("content").toString();
+
+                    // ObjectMapper를 사용해 String을 List<Map<String, String>>로 변환
+                    ObjectMapper mapper = new ObjectMapper();
+                    List<Map<String, String>> contentList = mapper.readValue(content, new TypeReference<List<Map<String, String>>>() {
+                    });
+
+                    return contentList;
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            log.info("Error occurred: "+e.getMessage());
+            log.info("Error occurred: " + e.getMessage());
             return null;
         }
+        return null;
 
     }
 
