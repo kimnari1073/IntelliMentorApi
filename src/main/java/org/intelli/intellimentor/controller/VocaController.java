@@ -1,7 +1,9 @@
 package org.intelli.intellimentor.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.intelli.intellimentor.dto.Voca.VocaAiDTO;
 import org.intelli.intellimentor.dto.Voca.VocaDTO;
 import org.intelli.intellimentor.dto.Voca.VocaItemDTO;
 import org.intelli.intellimentor.dto.Voca.VocaUpdateDTO;
@@ -29,7 +31,7 @@ public class VocaController {
 
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
-    //단어장 생성
+    //단어장 생성(직접생성)
     @PostMapping("/create")
     public ResponseEntity<?> createVoca(
             @RequestHeader("Authorization") String authHeader,
@@ -37,6 +39,17 @@ public class VocaController {
         String email = JWTUtil.JWTtoEmail(authHeader);
 
         vocaService.createVoca(email,vocaDTO);
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    //단어장 생성(ai)
+    @PostMapping("/ai")
+    public ResponseEntity<?> createVocaByAi(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody VocaAiDTO vocaAiDTO) throws JsonProcessingException {
+        String email = JWTUtil.JWTtoEmail(authHeader);
+        vocaService.createVocaByAi(email,vocaAiDTO);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

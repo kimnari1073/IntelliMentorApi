@@ -8,6 +8,7 @@ import lombok.extern.log4j.Log4j2;
 import org.intelli.intellimentor.domain.Section;
 import org.intelli.intellimentor.domain.Title;
 import org.intelli.intellimentor.domain.Voca;
+import org.intelli.intellimentor.dto.Voca.VocaAiDTO;
 import org.intelli.intellimentor.dto.Voca.VocaDTO;
 import org.intelli.intellimentor.dto.Voca.VocaUpdateDTO;
 import org.intelli.intellimentor.repository.SectionRepository;
@@ -307,12 +308,14 @@ public class VocaServiceTests {
 
     @Test
     public void testCreateVocaByChatGPT() throws JsonProcessingException {
-        String subject = "해외여행";
-        int count = 20;
+        VocaAiDTO vocaAiDTO = new VocaAiDTO();
+        vocaAiDTO.setCount(20);
+        vocaAiDTO.setTitle("해외여행 시 필수 단어들");
+        vocaAiDTO.setSubject("해외여행");
         String email = "user1@aaa.com";
-        String inputTitle="해외여행 시 필수 단어들";
         StringBuilder prompt = new StringBuilder();
-        prompt.append(subject).append("과 관련된 단어 ").append(count).append("개 생성해줘");
+        prompt.append(vocaAiDTO.getSubject()).append("과 관련된 단어 ")
+                .append(vocaAiDTO.getCount()).append("개 생성해줘");
 
         StringBuilder system = new StringBuilder();
         system.append("사족 붙히지 말고 원하는 답만 알려줘\n")
@@ -331,7 +334,7 @@ public class VocaServiceTests {
         log.info("eng: "+eng);
         log.info("kor: "+kor);
 
-        Title title = Title.builder().title(inputTitle).build();
+        Title title = Title.builder().title(vocaAiDTO.getTitle()).build();
         titleRepository.save(title);
 
         List<Voca> vocaList = new ArrayList<>();
