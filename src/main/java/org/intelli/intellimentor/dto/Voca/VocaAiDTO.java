@@ -7,4 +7,5 @@ public class VocaAiDTO {
     private String title;
     private String subject;
     private int count;
+    private String level;
 }

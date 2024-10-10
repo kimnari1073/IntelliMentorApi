@@ -312,14 +312,16 @@ public class VocaServiceTests {
         vocaAiDTO.setCount(20);
         vocaAiDTO.setTitle("해외여행 시 필수 단어들");
         vocaAiDTO.setSubject("해외여행");
+        vocaAiDTO.setLevel("상");
         String email = "user1@aaa.com";
         StringBuilder prompt = new StringBuilder();
         prompt.append(vocaAiDTO.getSubject()).append("과 관련된 단어 ")
-                .append(vocaAiDTO.getCount()).append("개 생성해줘");
+                .append(vocaAiDTO.getCount()).append("개만 생성해줘.")
+                .append("난이도는 ").append(vocaAiDTO.getLevel());
 
         StringBuilder system = new StringBuilder();
-        system.append("사족 붙히지 말고 원하는 답만 알려줘\n")
-                .append("사용자가 원하는 주제와 관련된 단어를 생성해줘.\n")
+        system.append("사족 붙히지 말고 답만 알려줘\n")
+                .append("사용자는 \"주제\"와 \"단어개수\",\"난이도\" 를 줄거야. 너는 \"주제\"와\"난이도\"에 맞는 단어를 \"단어개수\"만큼 생성해줘\n")
                 .append("Map 형태로 eng:[영어단어1,영어단어2...], kor:[영어단어의뜻1,영어단어의뜻2...]");
 
         Map<String, Object> message = testChatGPT(prompt.toString(), system.toString());
