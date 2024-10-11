@@ -32,7 +32,6 @@ import java.util.concurrent.ThreadLocalRandom;
 public class MemberServiceImpl implements MemberService{
 
     private final MemberRepository memberRepository;
-    private final VocaRepository vocaRepository;
     private final PasswordEncoder passwordEncoder;
 
 
