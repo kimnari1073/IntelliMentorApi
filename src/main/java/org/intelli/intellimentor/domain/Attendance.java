@@ -13,12 +13,10 @@ import lombok.*;
 @NoArgsConstructor
 public class Attendance {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
     private String userId;
     private Boolean Mon;
     private Boolean Tue;
-    private Boolean Wen;
+    private Boolean Wed;
     private Boolean Thu;
     private Boolean Fri;
     private Boolean Sat;

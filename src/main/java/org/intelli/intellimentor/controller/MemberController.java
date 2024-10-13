@@ -3,10 +3,12 @@ package org.intelli.intellimentor.controller;
 import jdk.jshell.Snippet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.intelli.intellimentor.domain.Attendance;
 import org.intelli.intellimentor.dto.MemberDTO;
 import org.intelli.intellimentor.dto.MemberSubDTO;
 import org.intelli.intellimentor.dto.Voca.VocaItemDTO;
 import org.intelli.intellimentor.service.MemberService;
+import org.intelli.intellimentor.service.ScheduledService;
 import org.intelli.intellimentor.util.CustomJWTException;
 import org.intelli.intellimentor.util.JWTUtil;
 import org.springframework.http.HttpStatus;
@@ -22,8 +24,15 @@ import java.util.Map;
 @RequestMapping("/api/member")
 public class MemberController {
     private final MemberService memberService;
+    private final ScheduledService scheduledService;
 
 
+    @GetMapping("/attendance")
+    public ResponseEntity<Attendance> getAttendance( @RequestHeader("Authorization") String authHeader){
+        String email = JWTUtil.JWTtoEmail(authHeader);
+        Attendance result = scheduledService.getAttendance(email);
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
 
     //소셜 회원가입&로그인 - 카카오
     @GetMapping("/kakao")
@@ -37,6 +46,7 @@ public class MemberController {
         claims.put("accessToken", jwtAccessToken);
         claims.put("refreshToken", jwtRefreshToken);
 
+        scheduledService.markAttendanceAsPresent(memberDTO.getEmail());
         return claims;
     }
 

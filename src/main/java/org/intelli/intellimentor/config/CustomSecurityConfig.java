@@ -29,6 +29,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @EnableMethodSecurity
 public class CustomSecurityConfig {
+
+    private final APILoginSuccessHandler loginSuccessHandler;
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http)throws Exception{
         log.info("------------------------------security config---------------");
@@ -49,7 +51,7 @@ public class CustomSecurityConfig {
         http.formLogin(config ->{
 
             config.loginPage("/api/member/login");
-            config.successHandler(new APILoginSuccessHandler());
+            config.successHandler(loginSuccessHandler);
             config.failureHandler(new APILoginFailHandler());
         });
 
