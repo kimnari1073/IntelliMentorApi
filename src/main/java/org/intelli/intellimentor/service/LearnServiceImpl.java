@@ -291,6 +291,7 @@ public class LearnServiceImpl implements LearnService{
             misMap.put("id", row.getId());
             misMap.put("eng", row.getEng());
             misMap.put("kor", row.getKor());
+            misMap.put("bookmark",row.isBookmark());
             misList.add(misMap);
         }
         vocaRepository.saveAll(mistakesList);

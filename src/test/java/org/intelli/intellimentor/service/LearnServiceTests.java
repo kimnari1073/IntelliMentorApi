@@ -294,7 +294,7 @@ public class LearnServiceTests {
 
 
 
-        //점수 업데이트 (백분율)
+        //점수 업데이트
         Section section = sectionRepository.findById(sectionId).orElseThrow();
 
         countMap.entrySet().removeIf(entry -> entry.getValue() == null);// null 값인 경우 해당 키 삭제
@@ -327,8 +327,6 @@ public class LearnServiceTests {
                 grade = "F";
             }
         }
-
-
         section.setGrade(grade);
         log.info("grade: "+section.getGrade());
 
@@ -362,6 +360,7 @@ public class LearnServiceTests {
             misMap.put("id", row.getId());
             misMap.put("eng", row.getEng());
             misMap.put("kor", row.getKor());
+            misMap.put("bookmark",row.isBookmark());
             misList.add(misMap);
         }
         vocaRepository.saveAll(mistakesList);
