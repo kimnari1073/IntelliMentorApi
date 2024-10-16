@@ -10,9 +10,10 @@ import org.intelli.intellimentor.domain.Voca;
 @ToString(callSuper = true) // 부모 클래스 필드를 포함한 toString() 생성
 public class VocaHomeDTO extends VocaItemDTO {
     private Long sectionId;
+    private Long titleId;
 
     // Voca 객체를 VocaHomeDTO로 변환하는 메서드
-    public static VocaHomeDTO from(Voca voca, Long sectionId) {
+    public static VocaHomeDTO from(Voca voca, Long sectionId,Long titleId) {
         VocaHomeDTO vocaHomeDTO = new VocaHomeDTO();
         vocaHomeDTO.setId(voca.getId());
         vocaHomeDTO.setEng(voca.getEng());
@@ -21,7 +22,8 @@ public class VocaHomeDTO extends VocaItemDTO {
         vocaHomeDTO.setMistakes(voca.getMistakes());
         vocaHomeDTO.setSentenceEng(voca.getSentenceEng());
         vocaHomeDTO.setSentenceKor(voca.getSentenceKor());
-        vocaHomeDTO.setSectionId(sectionId); // 추가된 sectionId 설정
+        vocaHomeDTO.setSectionId(sectionId);
+        vocaHomeDTO.setTitleId(titleId);
         return vocaHomeDTO;
     }
 }

@@ -10,6 +10,7 @@ import org.intelli.intellimentor.domain.Title;
 import org.intelli.intellimentor.domain.Voca;
 import org.intelli.intellimentor.dto.Voca.VocaAiDTO;
 import org.intelli.intellimentor.dto.Voca.VocaDTO;
+import org.intelli.intellimentor.dto.Voca.VocaHomeDTO;
 import org.intelli.intellimentor.dto.Voca.VocaUpdateDTO;
 import org.intelli.intellimentor.repository.SectionRepository;
 import org.intelli.intellimentor.repository.TitleRepository;
@@ -22,6 +23,7 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 @SpringBootTest
 @Log4j2
@@ -149,6 +151,36 @@ public class VocaServiceTests {
 
         sectionRepository.saveAll(saveSectionList);  // 섹션 저장
         vocaRepository.saveAll(vocaList);  // Voca 저장
+    }
+
+
+    @Test
+    public void testGetHome() {
+        // 초기 데이터 설정
+        String userId = "user1@aaa.com";
+
+        // 로직
+        List<Voca> vocaList = vocaRepository.findByUserIdAndSectionIdIsNotNullAndSentenceEngIsNotNull(userId);
+        List<Voca> topVocaList = vocaList.stream()
+                .filter(voca -> voca.getMistakes() > 0) // mistakes 필드가 1 이상인 경우만 필터링
+                .toList(); // 리스트로 변환
+
+        if(vocaList.isEmpty()){
+//            return null;
+        }
+
+        VocaHomeDTO vocaHomeDTO = null;
+        if (!topVocaList.isEmpty()) {
+            // ThreadLocalRandom을 사용하여 랜덤하게 1개의 단어 선택
+            Voca voca = topVocaList.get(ThreadLocalRandom.current().nextInt(topVocaList.size()));
+            vocaHomeDTO = VocaHomeDTO.from(voca, voca.getSection().getId(),voca.getTitle().getId());
+        } else { //틀린 단어가 없으면
+            Voca voca = vocaList.get(ThreadLocalRandom.current().nextInt(vocaList.size()));
+            vocaHomeDTO = VocaHomeDTO.from(voca, voca.getSection().getId(),voca.getTitle().getId());
+
+        }
+
+        log.info(vocaHomeDTO);
     }
 
     @Test

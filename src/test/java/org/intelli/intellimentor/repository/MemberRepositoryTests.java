@@ -60,28 +60,5 @@ public class MemberRepositoryTests {
         memberRepository.deleteAll();
     }
 
-    @Test
-    public void testGetHome() {
-        // 초기 데이터 설정
-        String userId = "user1@aaa.com";
 
-        // 로직
-        List<Voca> vocaList = vocaRepository.findByUserIdAndSectionIdIsNotNullAndSentenceEngIsNotNull(userId);
-        List<Voca> topVocaList = vocaList.stream()
-                .filter(voca -> voca.getMistakes() > 0) // mistakes 필드가 1 이상인 경우만 필터링
-                .toList(); // 리스트로 변환
-
-        VocaHomeDTO vocaHomeDTO = null;
-        if (!topVocaList.isEmpty()) {
-            // ThreadLocalRandom을 사용하여 랜덤하게 1개의 단어 선택
-            Voca voca = topVocaList.get(ThreadLocalRandom.current().nextInt(topVocaList.size()));
-            vocaHomeDTO = VocaHomeDTO.from(voca, voca.getSection().getId());
-        } else { //틀린 단어가 없으면
-            Voca voca = vocaList.get(ThreadLocalRandom.current().nextInt(vocaList.size()));
-            vocaHomeDTO = VocaHomeDTO.from(voca, voca.getSection().getId());
-
-        }
-
-        log.info(vocaHomeDTO);
-    }
 }
