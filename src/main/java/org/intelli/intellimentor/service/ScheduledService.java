@@ -25,7 +25,7 @@ public class ScheduledService {
     }
 
 
-    // 매주 월요일 00:00에 실행되는 스케줄러
+    // 매주 월요일 00:00에 실행
     @Scheduled(cron = "0 0 0 * * MON")
     @Transactional
     public void resetAttendanceFields() {
@@ -47,6 +47,30 @@ public class ScheduledService {
         attendanceRepository.saveAll(attendances);
     }
 
+    // 매일 자정 1분 전에 실행되는 스케줄러 설정 (23:59)
+    @Scheduled(cron = "00 59 23 * * *")
+    @Transactional
+    public void notAttendance(){
+        LocalDate today = LocalDate.now();
+        String dayOfWeek = LocalDate.now().getDayOfWeek().name();
+
+        // 오늘의 출석을 처리하지 않은 레코드만 가져오기
+        List<Attendance> attendances = attendanceRepository.findByDayOfWeekIsNull(dayOfWeek);
+
+        for (Attendance attendance : attendances) {
+            switch (today.getDayOfWeek()) {
+                case MONDAY -> attendance.setMon(false);
+                case TUESDAY -> attendance.setTue(false);
+                case WEDNESDAY -> attendance.setWed(false);
+                case THURSDAY -> attendance.setThu(false);
+                case FRIDAY -> attendance.setFri(false);
+                case SATURDAY -> attendance.setSat(false);
+                case SUNDAY -> attendance.setSun(false);
+            }
+        }
+        attendanceRepository.saveAll(attendances);
+    }
+    // 로그인 시 실행
     @Transactional
     public void markAttendanceAsPresent(String email) {
         // 이메일로 사용자를 조회
@@ -61,27 +85,13 @@ public class ScheduledService {
         // 오늘 날짜에 해당하는 출석 필드를 true로 변경
         LocalDate today = LocalDate.now();
         switch (today.getDayOfWeek()) {
-            case MONDAY:
-                attendance.setMon(true);
-                break;
-            case TUESDAY:
-                attendance.setTue(true);
-                break;
-            case WEDNESDAY:
-                attendance.setWed(true);
-                break;
-            case THURSDAY:
-                attendance.setThu(true);
-                break;
-            case FRIDAY:
-                attendance.setFri(true);
-                break;
-            case SATURDAY:
-                attendance.setSat(true);
-                break;
-            case SUNDAY:
-                attendance.setSun(true);
-                break;
+            case MONDAY -> attendance.setMon(false);
+            case TUESDAY -> attendance.setTue(false);
+            case WEDNESDAY -> attendance.setWed(false);
+            case THURSDAY -> attendance.setThu(false);
+            case FRIDAY -> attendance.setFri(false);
+            case SATURDAY -> attendance.setSat(false);
+            case SUNDAY -> attendance.setSun(false);
         }
 
         // 출석 기록을 저장
