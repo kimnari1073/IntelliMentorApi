@@ -42,6 +42,9 @@ public class VocaServiceImpl implements VocaService{
                 .filter(voca -> voca.getMistakes() > 0) // mistakes 필드가 1 이상인 경우만 필터링
                 .toList(); // 리스트로 변환
 
+        if(vocaList.isEmpty()){
+            return null;
+        }
         VocaHomeDTO vocaHomeDTO;
         if (!topVocaList.isEmpty()) {
             // ThreadLocalRandom을 사용하여 랜덤하게 1개의 단어 선택
