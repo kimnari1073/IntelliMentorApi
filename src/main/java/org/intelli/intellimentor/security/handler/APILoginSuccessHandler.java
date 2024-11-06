@@ -56,7 +56,10 @@ public class APILoginSuccessHandler implements AuthenticationSuccessHandler {
         printWriter.println(jsonStr);
         printWriter.close();
 
+
         scheduledService.markAttendanceAsPresent(memberDTO.getEmail());
+
+
 
     }
 }

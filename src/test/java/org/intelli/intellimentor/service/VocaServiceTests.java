@@ -177,7 +177,6 @@ public class VocaServiceTests {
         } else { //틀린 단어가 없으면
             Voca voca = vocaList.get(ThreadLocalRandom.current().nextInt(vocaList.size()));
             vocaHomeDTO = VocaHomeDTO.from(voca, voca.getSection().getId(),voca.getTitle().getId());
-
         }
 
         log.info(vocaHomeDTO);

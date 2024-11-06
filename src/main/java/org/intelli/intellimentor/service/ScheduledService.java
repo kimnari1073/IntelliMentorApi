@@ -73,6 +73,7 @@ public class ScheduledService {
     // 로그인 시 실행
     @Transactional
     public void markAttendanceAsPresent(String email) {
+        log.info("scheduledService...");
         // 이메일로 사용자를 조회
         Member member = memberRepository.findById(email).orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -85,13 +86,13 @@ public class ScheduledService {
         // 오늘 날짜에 해당하는 출석 필드를 true로 변경
         LocalDate today = LocalDate.now();
         switch (today.getDayOfWeek()) {
-            case MONDAY -> attendance.setMon(false);
-            case TUESDAY -> attendance.setTue(false);
-            case WEDNESDAY -> attendance.setWed(false);
-            case THURSDAY -> attendance.setThu(false);
-            case FRIDAY -> attendance.setFri(false);
-            case SATURDAY -> attendance.setSat(false);
-            case SUNDAY -> attendance.setSun(false);
+            case MONDAY -> attendance.setMon(true);
+            case TUESDAY -> attendance.setTue(true);
+            case WEDNESDAY -> attendance.setWed(true);
+            case THURSDAY -> attendance.setThu(true);
+            case FRIDAY -> attendance.setFri(true);
+            case SATURDAY -> attendance.setSat(true);
+            case SUNDAY -> attendance.setSun(true);
         }
 
         // 출석 기록을 저장
