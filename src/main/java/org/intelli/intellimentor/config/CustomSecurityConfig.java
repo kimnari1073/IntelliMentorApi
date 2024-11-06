@@ -75,13 +75,19 @@ public class CustomSecurityConfig {
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
 
-        configuration.setAllowedMethods(Arrays.asList("HEAD","GET","POST","PUT","DELETE","PATCH","OPTIONS"));
 
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://54.236.225.199:8080",
+                "http://54.236.225.199:3000",
+                "http://54.236.225.199",
+                "https://54.236.225.199:8080",
+                "https://54.236.225.199:3000",
+                "https://54.236.225.199"
+        ));
+        configuration.setAllowedMethods(Arrays.asList("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(true); // Credentials 허용
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
